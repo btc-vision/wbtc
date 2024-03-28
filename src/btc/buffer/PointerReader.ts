@@ -18,6 +18,7 @@ export class PointerReader {
         this.safeVerify(1);
 
         const val = this.buffer.getInt8(this.getOffset());
+
         this.currentOffset++;
 
         return val;

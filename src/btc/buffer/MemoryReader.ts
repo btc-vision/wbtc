@@ -57,7 +57,7 @@ class MemoryReader {
 
     public getMemoryAtOffset(): PointerReader {
         // we load the next 32 bytes from the offset
-        return new PointerReader(load<u256>(this.getMemoryPointer()));
+        return new PointerReader(load<u256>(this.getMemoryPointer(), 0));
     }
 
     // We must load 32 data by batch of 32 bytes starting at x offset. Data are stored as uint256.
@@ -65,7 +65,7 @@ class MemoryReader {
         let result = '';
         for (let i: u16 = 0; i < length; i++) {
             const currentPointerOffset: u8 = this.getMemoryOffset();
-            const targetMemoryOffset: u16 = (currentPointerOffset + i) % 32;
+            const targetMemoryOffset: u16 = (currentPointerOffset + i) % 31;
 
             let data = this.currentPointer.getU8AtOffset(targetMemoryOffset as u8);
             result += String.fromCharCode(data);

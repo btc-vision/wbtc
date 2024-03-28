@@ -1,6 +1,5 @@
 import { Address } from '../types/Address';
 import { Potential } from './Definitions';
-import { memoryReader } from '../buffer/MemoryReader';
 
 
 export class ContractDefaults {
@@ -25,11 +24,11 @@ export class ContractDefaults {
         return this.owner as Address;
     }
 
-    public loadContractDefaults(): void {
+    public loadContractDefaults(owner: Address, self: Address): void {
         if (this.loaded) throw new Error('Defaults already loaded');
 
-        this.owner = memoryReader.readStringFromMemory(62);
-        this.self = memoryReader.readStringFromMemory(62);
+        this.owner = owner; //
+        this.self = self; //memoryReader.readStringFromMemory(62);
 
         if (!this.self) {
             throw new Error('NO CONTRACT INITIALIZER FOUND.');

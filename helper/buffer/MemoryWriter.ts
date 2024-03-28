@@ -1,15 +1,18 @@
 import { PointerWriter } from './PointerWriter';
 
 export class MemoryWriter {
-    public memory: WebAssembly.Memory = new WebAssembly.Memory({ initial: 1024, maximum: 65536, shared: true });
-    public uint8Array: Uint8Array = new Uint8Array(this.memory.buffer);
+    public memory: WebAssembly.Memory;
+    public uint8Array: Uint8Array;
 
     private currentMemoryOffset: number = 0;
     private currentMemoryPointer: number = 0;
 
     private currentPointer: PointerWriter; // This would need to be implemented
 
-    constructor() {
+    constructor(memory?: WebAssembly.Memory) {
+        this.memory = memory || new WebAssembly.Memory({ initial: 1, maximum: 65536, shared: false });
+        this.uint8Array = new Uint8Array(this.memory.buffer);
+        
         this.currentPointer = this.getMemoryAtOffset();
     }
 

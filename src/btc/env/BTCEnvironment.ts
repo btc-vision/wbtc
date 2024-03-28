@@ -20,8 +20,8 @@ export class BlockchainEnvironment {
 
     }
 
-    public init(): ContractDefaults {
-        this.defaults.loadContractDefaults();
+    public init(owner: Address, self: Address): ContractDefaults {
+        this.defaults.loadContractDefaults(owner, self);
 
         return this.defaults;
     }
