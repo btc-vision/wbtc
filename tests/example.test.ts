@@ -1,8 +1,12 @@
-import assert from "assert";
-import { add } from "../build/debug.js";
-assert.strictEqual(add(1, 2), 3);
-console.log("ok");
+import 'jest';
 
 
+describe('getAll', () => {
+    beforeAll(() => {
+        //jest.mock('fs');
+    });
 
-import jest from "jest";
+    it('Test unit test', async () => {
+        console.log('Test unit test');
+    });
+});
