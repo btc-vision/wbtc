@@ -33,8 +33,11 @@
         "allowSyntheticDefaultImports": true,
         "outDir": "build"
     },
+
     "include": [
         "./tests/*.ts",
-        "./tests/**/*.ts"
+        "./tests/**/*.ts",
+        "./helper/*.ts",
+        "./helper/**/*.ts",
     ]
 }

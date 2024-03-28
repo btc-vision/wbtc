@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="416d6194-4e78-4683-bece-f002bbf19e08" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/helper/buffer/MemoryWriter.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/helper/buffer/PointerWriter.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/MotoSwapFactory.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/btc/buffer/MemoryReader.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/btc/buffer/PointerReader.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/btc/contracts/BTCContract.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/btc/env/BTCEnvironment.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/btc/env/index.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/btc/env/types/EvaluatedResult.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/btc/interfaces/IBTC.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/btc/lang/Definitions.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/btc/memory/MemorySlot.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/btc/memory/MemorySlotPointer.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/btc/types/Address.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/RSNet.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/markdown.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/motoswap.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/prettier.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/prettier.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/example.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tests/example.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="TypeScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="FormatOnSaveOptions">
+    <option name="myRunOnSave" value="true" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="OptimizeOnSaveOptions">
+    <option name="myRunOnSave" value="true" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 5
+}]]></component>
+  <component name="ProjectId" id="2eIrPk9dIlup0jz7hPjsGG5KFRZ" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "dev",
+    "last_opened_file_path": "C:/Users/felix/Desktop/moto/MotoSwapFactory",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "rearrange.code.on.save": "true",
+    "settings.editor.selected.configurable": "actions.on.save",
+    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\WebStorm 2023.1.1\\plugins\\javascript-impl\\jsLanguageServicesImpl\\external",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\felix\Desktop\moto\MotoSwapFactory\helper\buffer" />
+      <recent name="C:\Users\felix\Desktop\moto\MotoSwapFactory" />
+      <recent name="C:\Users\felix\Desktop\moto\MotoSwapFactory\tests" />
+      <recent name="C:\Users\felix\Desktop\moto\MotoSwapFactory\src\btc\env" />
+      <recent name="C:\Users\felix\Desktop\moto\MotoSwapFactory\src\btc\interfaces" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="416d6194-4e78-4683-bece-f002bbf19e08" name="Changes" comment="" />
+      <created>1711602910264</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1711602910264</updated>
+      <workItem from="1711602911275" duration="13423000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
