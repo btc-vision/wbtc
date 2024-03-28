@@ -5,34 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="416d6194-4e78-4683-bece-f002bbf19e08" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/helper/buffer/MemoryWriter.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/helper/buffer/PointerWriter.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/MotoSwapFactory.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/btc/buffer/MemoryReader.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/btc/buffer/PointerReader.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/btc/contracts/BTCContract.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/btc/env/BTCEnvironment.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/btc/env/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/btc/env/types/EvaluatedResult.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/btc/interfaces/IBTC.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/btc/lang/Definitions.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/btc/memory/MemorySlot.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/btc/memory/MemorySlotPointer.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/btc/types/Address.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/RSNet.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/markdown.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/motoswap.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/prettier.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/prettier.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/btc/lang/ContractDefaults.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/helper/buffer/MemoryWriter.ts" beforeDir="false" afterPath="$PROJECT_DIR$/helper/buffer/MemoryWriter.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/helper/buffer/PointerWriter.ts" beforeDir="false" afterPath="$PROJECT_DIR$/helper/buffer/PointerWriter.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/btc/buffer/MemoryReader.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/buffer/MemoryReader.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/btc/buffer/PointerReader.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/buffer/PointerReader.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/btc/env/BTCEnvironment.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/env/BTCEnvironment.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/btc/env/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/env/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/example.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tests/example.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -100,7 +82,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1711602910264</updated>
-      <workItem from="1711602911275" duration="13423000" />
+      <workItem from="1711602911275" duration="15346000" />
     </task>
     <servers />
   </component>

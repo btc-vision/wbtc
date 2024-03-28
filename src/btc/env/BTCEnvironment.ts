@@ -4,16 +4,26 @@ import { MemorySlotPointer } from '../memory/MemorySlotPointer';
 import { MemorySlotData } from '../memory/MemorySlot';
 import { EvaluatedResult } from './types/EvaluatedResult';
 import { u256 } from 'as-bignum/assembly';
+import { ContractDefaults } from '../lang/ContractDefaults';
 
 export type BlockchainStorage = Map<Address, Map<MemorySlotPointer, MemorySlotData>>;
+
 
 export class BlockchainEnvironment {
     private requiredStorage: Map<Address, Set<MemorySlotPointer>> = new Map();
     private storage: BlockchainStorage = new Map();
     private contracts: Map<Address, BTCContract> = new Map();
 
+    private defaults: ContractDefaults = new ContractDefaults();
+
     constructor() {
 
+    }
+
+    public init(): ContractDefaults {
+        this.defaults.loadContractDefaults();
+
+        return this.defaults;
     }
 
     public reset(): void {

@@ -26,7 +26,7 @@ describe('Test wasm module', () => {
             throw new Error('Module not found');
         }
 
-        module = moduleWasm.CONTRACT;
+        module = moduleWasm.CONTRACT();
     });
 
     it('Loaded wasm', async () => {

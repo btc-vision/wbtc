@@ -1,7 +1,7 @@
 import { PointerWriter } from './PointerWriter';
 
 export class MemoryWriter {
-    public memory: WebAssembly.Memory = new WebAssembly.Memory({ initial: 1, maximum: 65536, shared: false });
+    public memory: WebAssembly.Memory = new WebAssembly.Memory({ initial: 1024, maximum: 65536, shared: true });
     public uint8Array: Uint8Array = new Uint8Array(this.memory.buffer);
 
     private currentMemoryOffset: number = 0;
@@ -16,7 +16,7 @@ export class MemoryWriter {
     public addMemoryOffset(): void {
         this.currentMemoryOffset++;
 
-        if (this.currentMemoryOffset >= 32) {
+        if (this.currentMemoryOffset >= 31) {
             this.currentMemoryOffset = 0;
             this.addMemoryPointer();
         }

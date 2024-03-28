@@ -13,7 +13,7 @@ export class PointerWriter {
 
         this.safeVerify(1);
 
-        this.buffer.setUint8(this.pointerStart + this.currentOffset, value);
+        this.buffer.setUint8(this.getOffset(), value);
         this.currentOffset++;
     }
 
@@ -24,7 +24,7 @@ export class PointerWriter {
 
         this.safeVerify(2);
 
-        this.buffer.setUint16(this.pointerStart + this.currentOffset, value, true);
+        this.buffer.setUint16(this.getOffset(), value, true);
         this.currentOffset += 2;
     }
 
@@ -35,7 +35,7 @@ export class PointerWriter {
 
         this.safeVerify(4);
 
-        this.buffer.setUint32(this.pointerStart + this.currentOffset, value, true);
+        this.buffer.setUint32(this.getOffset(), value, true);
         this.currentOffset += 4;
     }
 
@@ -46,18 +46,20 @@ export class PointerWriter {
 
         this.safeVerify(8);
 
-        this.buffer.setBigUint64(this.pointerStart + this.currentOffset, BigInt(value), true);
+        this.buffer.setBigUint64(this.getOffset(), BigInt(value), true);
         this.currentOffset += 8;
     }
 
-    private safeVerify(elementSize: number, offset: number = this.currentOffset) {
+    public getOffset(): number {
+        return this.currentOffset + this.pointerStart;
+    }
+
+    private safeVerify(elementSize: number, offset: number = this.currentOffset): void {
         if (offset) {
             this.currentOffset = offset;
         }
 
-        console.log(this.pointerStart, this.currentOffset, elementSize, this.pointerEnd);
-
-        if (this.pointerStart + this.currentOffset + elementSize >= this.pointerEnd) {
+        if (this.getOffset() + elementSize >= this.pointerEnd) {
             throw new Error(`PointerWriter: Out of bounds ${this.pointerStart + this.currentOffset + elementSize} >= ${this.pointerEnd}`);
         }
     }

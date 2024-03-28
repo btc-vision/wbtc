@@ -14,7 +14,7 @@ class MemoryReader {
     public addMemoryOffset(): void {
         this.currentMemoryOffset++;
 
-        if (this.currentMemoryOffset >= 32) {
+        if (this.currentMemoryOffset >= 31) {
             this.currentMemoryOffset = 0;
 
             this.addMemoryPointer();

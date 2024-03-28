@@ -1,6 +1,8 @@
 import { MotoSwapFactory } from './MotoSwapFactory';
-import { consoleLog, owner, self } from './btc/env';
+import { Blockchain } from './btc/env';
 
-consoleLog('MotoSwapFactory initialized.');
+export function CONTRACT(): MotoSwapFactory {
+    const blockchainData = Blockchain.init();
 
-export const CONTRACT = new MotoSwapFactory(self, owner);
+    return new MotoSwapFactory(blockchainData.self, blockchainData.owner);
+}
