@@ -4,5 +4,5 @@ import { Blockchain } from './btc/env';
 export function CONTRACT(): MotoSwapFactory {
     const blockchainData = Blockchain.init();
 
-    return new MotoSwapFactory(blockchainData.self, blockchainData.owner);
+    return new MotoSwapFactory(blockchainData.selfAddress, blockchainData.ownerAddress);
 }

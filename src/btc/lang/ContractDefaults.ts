@@ -13,6 +13,18 @@ export class ContractDefaults {
     }
 
 
+    get selfAddress(): Address {
+        if (!this.self) throw new Error('Self address not found');
+
+        return this.self as Address;
+    }
+
+    get ownerAddress(): Address {
+        if (!this.owner) throw new Error('Owner address not found');
+
+        return this.owner as Address;
+    }
+
     public loadContractDefaults(): void {
         if (this.loaded) throw new Error('Defaults already loaded');
 
