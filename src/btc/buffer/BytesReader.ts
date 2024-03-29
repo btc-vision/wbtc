@@ -57,17 +57,23 @@ export class BytesReader {
         return new PointerReader(pointer);
     }
 
-    public readBytes(length: u32): Uint8Array {
-        const bytes = new Uint8Array(length);
+    public readBytes(length: u32, zeroStop: boolean = false): Uint8Array {
+        let bytes = new Uint8Array(length);
         for (let i: u32 = 0; i < length; i++) {
-            bytes[i] = this.readU8();
+            const byte = this.readU8();
+            if (zeroStop && byte == 0) {
+                bytes = bytes.slice(0, i);
+                continue;
+            }
+
+            bytes[i] = byte;
         }
 
         return bytes;
     }
 
     public readString(length: u16): string {
-        const bytes = this.readBytes(length);
+        const bytes = this.readBytes(length, true);
 
         return String.UTF8.decode(bytes.buffer);
     }

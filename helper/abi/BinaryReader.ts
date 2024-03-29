@@ -15,7 +15,7 @@ export interface ABIRegistryItem {
 }
 
 export type ContractABIMap = Set<Selector>;
-export type PropertyABIMap = Set<ABIRegistryItem>;
+export type PropertyABIMap = Map<string, Selector>;
 export type SelectorsMap = Map<Address, PropertyABIMap>;
 export type MethodMap = Map<Address, ContractABIMap>;
 
@@ -35,11 +35,13 @@ export class BinaryReader {
     }
 
     public readSelectors(): PropertyABIMap {
-        const selectors: PropertyABIMap = new Set();
+        const selectors: PropertyABIMap = new Map();
         const length = this.readU16();
 
         for (let i = 0; i < length; i++) {
-            selectors.add(this.readABISelector());
+            const selectorData = this.readABISelector();
+
+            selectors.set(selectorData.name, selectorData.selector);
         }
 
         return selectors;
@@ -124,12 +126,18 @@ export class BinaryReader {
         return (BigInt(high) << 32n) | low;
     }
 
-    public readBytes(length: u32): Uint8Array {
-        const bytes = new Uint8Array(length);
+    public readBytes(length: u32, zeroStop: boolean = false): Uint8Array {
+        let bytes = new Uint8Array(length);
         this.verifyEnd(this.currentOffset + length);
 
         for (let i: u32 = 0; i < length; i++) {
-            bytes[i] = this.readU8();
+            const byte = this.readU8();
+            if (zeroStop && byte == 0) {
+                bytes = bytes.slice(0, i);
+                continue;
+            }
+
+            bytes[i] = byte;
         }
 
         return bytes;
@@ -137,7 +145,7 @@ export class BinaryReader {
 
     public readString(length: u16): string {
         const textDecoder = new TextDecoder();
-        const bytes = this.readBytes(length);
+        const bytes = this.readBytes(length, true);
 
         return textDecoder.decode(bytes);
     }
