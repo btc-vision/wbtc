@@ -1,7 +1,7 @@
 import 'jest';
 
 // @ts-ignore
-import * as wasm from '../debug/runDebug.js';
+import * as wasm from '../config/runDebug.js';
 import { MotoSwapFactory } from '../contracts/MotoSwapFactory';
 import { MemoryWriter } from '../helper/buffer/memory/MemoryWriter';
 import { BinaryReader, ContractABIMap, MethodMap, PropertyABIMap, SelectorsMap } from '../helper/abi/BinaryReader';
