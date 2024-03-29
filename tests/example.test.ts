@@ -1,21 +1,14 @@
 import 'jest';
 
-import * as wasmType from '../debug/debug.js';
-
 // @ts-ignore
 import * as wasm from '../debug/runDebug.js';
-
-import { MemoryWriter } from '../helper/buffer/MemoryWriter';
+import { MotoSwapFactory } from '../src/MotoSwapFactory';
 
 describe('Test wasm module', () => {
+    const OWNER = 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq';
+    const CONTRACT_ADDRESS = 'bc1p5d7rjq7g6rdk2yhzks9smlaqtedr4dekq08ge8ztwac72sfr9rusxg3297';
 
-
-    // @ts-ignore
-    /*globalThis.env = {
-        memory: memoryWriter.memory,
-    };*/
-
-    let module: typeof wasmType.CONTRACT | null = null;
+    let module: MotoSwapFactory | null = null;
     beforeEach(async () => {
         // @ts-ignore
         const moduleWasm = await wasm.promise;
@@ -23,13 +16,10 @@ describe('Test wasm module', () => {
             throw new Error('Module not found');
         }
 
-        const memory = moduleWasm.memory;
-        const memoryWriter = new MemoryWriter(memory);
-        memoryWriter.writeStringToMemory('bc1p5d7rjq7g6rdk2yhzks9smlaqtedr4dekq08ge8ztwac72sfr9rusxg3297');
+        module = moduleWasm.CONTRACT(OWNER, CONTRACT_ADDRESS);
 
-        module = moduleWasm.CONTRACT('bc1p5d7rjq7g6rdk2yhzks9smlaqtedr4dekq08ge8ztwac72sfr9rusxg3297', 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq');
-
-        console.log(memoryWriter.uint8Array);
+        expect(module).not.toBe(null);
+        expect(module).not.toBe(undefined);
     });
 
     it('Loaded wasm', async () => {
@@ -37,7 +27,15 @@ describe('Test wasm module', () => {
         expect(module).not.toBe(undefined);
     });
 
-    it('add', async () => {
+    it('Contract owner to be owner.', async () => {
+        if (!module) {
+            throw new Error('Module not found');
+        }
+
         console.log(module);
+
+        const isOwnerContractOwner = module.isAddressOwner(OWNER);
+
+        expect(isOwnerContractOwner).toBe(true);
     });
 });

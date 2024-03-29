@@ -35,4 +35,8 @@ export abstract class BTCContract implements IBTC {
     public get owner(): string {
         return this._owner;
     }
+
+    public isAddressOwner(self: Address): boolean {
+        return this._self === self;
+    }
 }
