@@ -4,12 +4,13 @@ import { Address, PotentialAddress } from '../types/Address';
 import { BytesWriter } from '../buffer/BytesWriter';
 import { Calldata } from '../universal/ABIRegistry';
 import { BTCContract } from './BTCContract';
-import { MemoryMap } from '../memory/MemoryMap';
+import { AddressMemoryMap } from '../memory/AddressMemoryMap';
 import { Revert } from '../types/Revert';
 import { SafeMath } from '../types/SafeMath';
 import { Blockchain } from '../env';
 import { MemorySlotData } from '../memory/MemorySlot';
 import { encodeSelector, Selector } from '../math/abi';
+import { MultiAddressMemoryMap } from '../memory/MultiAddressMemoryMap';
 
 export abstract class CBRC20 extends BTCContract implements ICBRC20 {
     public readonly decimals: u8 = 18;
@@ -17,13 +18,16 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
     public readonly name: string = `CBRC20`;
     public readonly symbol: string = `CBRC20`;
 
-    protected readonly allowanceMap: MemoryMap<Address, MemoryMap<Address, u256>> = new MemoryMap<Address, MemoryMap<Address, u256>>(0);
-    protected readonly balanceOfMap: MemoryMap<Address, u256> = new MemoryMap<Address, u256>(1);
+    protected readonly allowanceMap: MultiAddressMemoryMap<Address, Address, MemorySlotData<u256>>;
+    protected readonly balanceOfMap: AddressMemoryMap<Address, MemorySlotData<u256>>;
 
     protected constructor(self: Address, owner: Address) {
         super(self, owner);
 
-        this._totalSupply = Blockchain.getStorageAt(self, 2);
+        this.allowanceMap = new MultiAddressMemoryMap<Address, Address, MemorySlotData<u256>>(0, self);
+        this.balanceOfMap = new AddressMemoryMap<Address, MemorySlotData<u256>>(1, self);
+
+        this._totalSupply = Blockchain.getStorageAt(self, 2, u256.Zero);
     }
 
     public _totalSupply: MemorySlotData<u256>;
@@ -148,8 +152,6 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
 
     /** REDEFINED METHODS */
     protected _allowance(owner: string, spender: string): u256 {
-        if (!this.allowanceMap.has(owner)) throw new Revert();
-
         const senderMap = this.allowanceMap.get(owner);
         if (!senderMap.has(spender)) throw new Revert();
 
@@ -157,12 +159,9 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
     }
 
     protected _approve(caller: Address, spender: string, value: u256): boolean {
-        if (!this.allowanceMap.has(caller)) throw new Revert();
-
         const senderMap = this.allowanceMap.get(caller);
-        if (!senderMap.has(spender)) throw new Revert();
-
         senderMap.set(spender, value);
+
         return true;
     }
 
@@ -246,6 +245,10 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
 
     protected _transferFrom(caller: Address, from: string, to: string, value: u256): boolean {
         if (!this.allowanceMap.has(from)) throw new Revert();
+
+        const fromAllowanceMap = this.allowanceMap.get(from);
+        const allowed: u256 = fromAllowanceMap.get(caller);
+        if (allowed < value) throw new Revert(`Insufficient allowance`);
 
         if (this.isSelf(caller)) throw new Revert('Can not transfer from self account');
 
