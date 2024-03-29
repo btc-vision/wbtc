@@ -7,7 +7,7 @@ import { MemoryWriter } from '../helper/buffer/memory/MemoryWriter';
 import { BinaryReader, ContractABIMap, MethodMap, PropertyABIMap, SelectorsMap } from '../helper/abi/BinaryReader';
 import { ABICoder, ABIDataTypes } from '../helper/abi/ABICoder';
 
-describe('Test wasm module', () => {
+describe('I should be able to create my own contract for Bitcoin.', () => {
     const OWNER = 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq';
     const CONTRACT_ADDRESS = 'bc1p5d7rjq7g6rdk2yhzks9smlaqtedr4dekq08ge8ztwac72sfr9rusxg3297';
 
@@ -63,7 +63,7 @@ describe('Test wasm module', () => {
         expect(module).toBeDefined();
     });
 
-    it('Contract owner to be owner.', async () => {
+    it('Contract owner should be owner.', async () => {
         expect(module).toBeDefined();
         expect(decodedViewSelectors).toBeDefined();
         expect(decodedMethodSelectors).toBeDefined();

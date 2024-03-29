@@ -6,14 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="416d6194-4e78-4683-bece-f002bbf19e08" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/MotoSwapFactory.ts" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/MotoSwapFactory.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/helper/abi/ABICoder.ts" beforeDir="false" afterPath="$PROJECT_DIR$/helper/abi/ABICoder.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/helper/abi/BinaryReader.ts" beforeDir="false" afterPath="$PROJECT_DIR$/helper/abi/BinaryReader.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/buffer/BytesReader.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/buffer/BytesReader.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/contracts/BTCContract.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/contracts/BTCContract.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/exports/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/exports/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/universal/ABIRegistry.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/universal/ABIRegistry.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/example.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tests/MotoSwapFactory.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/MotoSwapFactory.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tests/MotoSwapFactory.test.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,7 +75,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1711602910264</updated>
-      <workItem from="1711602911275" duration="43647000" />
+      <workItem from="1711602911275" duration="43718000" />
     </task>
     <servers />
   </component>
