@@ -4,6 +4,7 @@ import { Blockchain } from '../env';
 import { ABIRegistry, Calldata } from '../universal/ABIRegistry';
 import { BytesWriter } from '../buffer/BytesWriter';
 import { encodeSelector, Selector } from '../math/abi';
+import { Revert } from '../types/Revert';
 
 export abstract class BTCContract implements IBTC {
     public readonly response: BytesWriter = new BytesWriter();
@@ -13,15 +14,15 @@ export abstract class BTCContract implements IBTC {
 
     protected constructor(self: Address, owner: Address) {
         if (!self) {
-            throw new Error('CONTRACT DOESNT NOT KNOW ITS OWN ADDRESS.');
+            throw new Revert('CONTRACT DOESNT NOT KNOW ITS OWN ADDRESS.');
         }
 
         if (!owner) {
-            throw new Error('NO CONTRACT INITIALIZER FOUND.');
+            throw new Revert('NO CONTRACT INITIALIZER FOUND.');
         }
 
         if (Blockchain.hasContract(self)) {
-            throw new Error('CONTRACT ALREADY EXISTS.');
+            throw new Revert('CONTRACT ALREADY EXISTS.');
         }
 
         //memory.grow(1); // 64k allocate memory for the contract
@@ -30,11 +31,11 @@ export abstract class BTCContract implements IBTC {
         this._self = self;
 
         if (!this._owner) {
-            throw new Error('Owner is required');
+            throw new Revert('Owner is required');
         }
 
         if (!this._self) {
-            throw new Error('Self is required');
+            throw new Revert('Self is required');
         }
 
         this.defineProtectedSelectors();
@@ -59,7 +60,7 @@ export abstract class BTCContract implements IBTC {
             case encodeSelector('isAddressOwner'):
                 return this.isAddressOwner(calldata);
             default:
-                throw new Error('Method not found');
+                throw new Revert('Method not found');
         }
     }
 
@@ -72,7 +73,7 @@ export abstract class BTCContract implements IBTC {
                 this.response.writeAddress(this.owner);
                 break;
             default:
-                throw new Error('Method not found');
+                throw new Revert('Method not found');
         }
 
         return this.response;
@@ -80,6 +81,12 @@ export abstract class BTCContract implements IBTC {
 
     protected isSelf(address: Address): boolean {
         return this._self === address;
+    }
+
+    protected onlyOwner(caller: Address): void {
+        if (this._owner !== caller) {
+            throw new Revert('Only owner can call this method');
+        }
     }
 
     protected defineMethodSelector(name: string): void {

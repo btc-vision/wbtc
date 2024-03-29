@@ -1,3 +1,1 @@
-import { u256 } from 'as-bignum/assembly';
-
-export type MemorySlotData = u256;
+export type MemorySlotData<T> = T;

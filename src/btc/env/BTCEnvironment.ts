@@ -10,7 +10,7 @@ import { BytesReader } from '../buffer/BytesReader';
 import { Selector } from '../math/abi';
 import { BytesWriter } from '../buffer/BytesWriter';
 
-export type BlockchainStorage = Map<Address, Map<MemorySlotPointer, MemorySlotData>>;
+export type BlockchainStorage = Map<Address, Map<MemorySlotPointer, MemorySlotData<u256>>>;
 
 export class BlockchainEnvironment {
     private requiredStorage: Map<Address, Set<MemorySlotPointer>> = new Map();
@@ -63,7 +63,7 @@ export class BlockchainEnvironment {
         return result.toBytesReader();
     }
 
-    public getStorageAt(address: Address, pointer: MemorySlotPointer): MemorySlotData {
+    public getStorageAt(address: Address, pointer: MemorySlotPointer): MemorySlotData<u256> {
         const storage = this.storage.get(address);
         if (!storage) {
             throw new Error(`Storage for address ${address} not found`);
@@ -76,7 +76,7 @@ export class BlockchainEnvironment {
         return storage.get(pointer);
     }
 
-    public setStorageAt(address: Address, pointer: MemorySlotPointer, value: MemorySlotData): void {
+    public setStorageAt(address: Address, pointer: MemorySlotPointer, value: MemorySlotData<u256>): void {
         const storage = this.storage.get(address);
 
         if (!storage) {
@@ -118,7 +118,7 @@ export class BlockchainEnvironment {
     public loadStorage(address: Address, pointers: MemorySlotPointer[], data: Uint64Array[]): void {
         this.storage.clear();
 
-        const storage: Map<MemorySlotPointer, MemorySlotData> = new Map<MemorySlotPointer, MemorySlotData>();
+        const storage: Map<MemorySlotPointer, MemorySlotData<u256>> = new Map<MemorySlotPointer, MemorySlotData<u256>>();
         for (let i: i16 = 0; i < pointers.length; i++) {
             if (!data[i]) throw new Error(`Data for slot ${pointers[i]} not found`);
 
