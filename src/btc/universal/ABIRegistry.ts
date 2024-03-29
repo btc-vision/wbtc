@@ -1,100 +1,135 @@
 import { BTCContract } from '../contracts/BTCContract';
+import { encodeSelector, Selector } from '../math/abi';
+import { BytesReader } from '../buffer/BytesReader';
+import { BytesWriter } from '../buffer/BytesWriter';
 
-export type Pointer = u32;
-export type ContractFunction = (parameters: Pointer) => Pointer;
-export type ContractABIMap = Map<string, ContractFunction>;
+export type ABIRegistryItem = Uint8Array;
+
+export type Calldata = NonNullable<BytesReader>;
+//export type ContractFunction = (calldata: Calldata, caller?: PotentialAddress) => BytesWriter;
+
+export type ContractABIMap = Set<Selector>;
+export type PropertyABIMap = Set<ABIRegistryItem>;
+
+export type SelectorsMap = Map<BTCContract, PropertyABIMap>;
+export type MethodMap = Map<BTCContract, ContractABIMap>;
 
 class ABIRegistryBase {
-    private methodMap: Map<BTCContract, ContractABIMap> = new Map();
-    private propertyMap: Map<BTCContract, Set<string>> = new Map();
+    private methodMap: MethodMap = new Map();
+    private selectors: SelectorsMap = new Map();
 
-    // Register properties with their names and handlers
-    public registerProperty(contract: BTCContract, name: string): void {
-        const contractMap = this.propertyMap.get(contract) || new Map();
-        contractMap.add(name);
+    // Register properties with their selectors and handlers
+    public defineGetterSelector(contract: BTCContract, name: string): void {
+        const selector: Selector = encodeSelector(name);
 
-        this.propertyMap.set(contract, contractMap);
-    }
-
-    public listProperties(contract: BTCContract): string[] {
-        const contractMap = this.propertyMap.get(contract);
-        if (!contractMap) {
-            return [];
+        let contractMap: PropertyABIMap;
+        if (!this.selectors.has(contract)) {
+            contractMap = new Set();
+        } else {
+            contractMap = this.selectors.get(contract);
         }
 
-        return contractMap.values();
+        const selectorWriter: BytesWriter = new BytesWriter();
+        selectorWriter.writeABISelector(name, selector);
+
+        contractMap.add(selectorWriter.getBuffer());
+
+        this.selectors.set(contract, contractMap);
     }
 
-    // Register methods with their names and handlers
-    public registerMethod(contract: BTCContract, name: string, handler: ContractFunction): void {
-        const contractMap = this.methodMap.get(contract) || new Map();
-        contractMap.set(name, handler);
+    public getSelectorForContract(contract: BTCContract): ABIRegistryItem {
+        if (!this.selectors.has(contract)) {
+            throw new Error(`Contract not found.`);
+        }
 
-        this.methodMap.set(contract, contractMap);
-    }
-
-    public getMethodByContract(contract: BTCContract, name: string): ContractFunction {
-        const contractMap = this.methodMap.get(contract);
+        const contractMap: PropertyABIMap = this.selectors.get(contract);
         if (!contractMap) {
             throw new Error(`Contract not found.`);
         }
 
-        const handler = contractMap.get(name);
-        if (!handler) {
-            throw new Error(`Method ${name} not found in contract.`);
-        }
-
-        return handler;
+        return contractMap.values()[0];
     }
 
-    // Call a method by name
-    public callMethodByName(name: string, contract: BTCContract | null): ContractFunction {
-        if (!contract) {
-            return this.getMethodByName(name);
-        }
+    public getViewSelectors(): Uint8Array {
+        const writer: BytesWriter = new BytesWriter();
+        writer.writeViewSelectorMap(this.selectors);
 
-        return this.getMethodByContract(contract, name);
+        return writer.getBuffer();
     }
 
-    // List all registered method names
-    public listMethods(contract: BTCContract): string[] {
+    public getMethodSelectors(): Uint8Array {
+        const writer: BytesWriter = new BytesWriter();
+        writer.writeMethodSelectorsMap(this.methodMap);
+
+        return writer.getBuffer();
+    }
+
+    // Register methods with their selectors and handlers
+    public defineMethodSelector(contract: BTCContract, name: string): void {
+        const selector: u32 = encodeSelector(name);
+
+        if (!this.methodMap.has(contract)) {
+            this.methodMap.set(contract, new Set());
+        }
+
+        const contractMap: ContractABIMap = this.methodMap.get(contract);
+        if (contractMap.has(selector)) {
+            throw new Error(`Method ${name} already exists.`);
+        }
+
+        contractMap.add(selector);
+
+        this.methodMap.set(contract, contractMap);
+    }
+
+    public hasMethodByContract(contract: BTCContract, selector: Selector): BTCContract | null {
+        if (!this.methodMap.has(contract)) {
+            throw new Error(`Contract not found.`);
+        }
+
         const contractMap = this.methodMap.get(contract);
-        if (!contractMap) {
-            return [];
+
+        if (contractMap.has(selector)) {
+            return contract;
         }
 
-        return contractMap.keys();
+        return null;
     }
 
-    public listAllMethods(): string[] {
+    // Call a method by selector
+    public hasMethodBySelector(selector: Selector, contract: BTCContract | null): BTCContract | null {
+        if (!contract) {
+            return this.hasMethodBySelectorInAllContracts(selector);
+        }
+
+        return this.hasMethodByContract(contract, selector);
+    }
+
+    public hasMethodByName(name: string, contract: BTCContract | null): BTCContract | null {
+        const selector: Selector = encodeSelector(name);
+
+        return this.hasMethodBySelector(selector, contract);
+    }
+
+    private hasMethodBySelectorInAllContracts(selector: Selector): BTCContract | null {
+        const keys = this.methodMap.keys();
         const values = this.methodMap.values();
-        const result = new Array<string>();
 
-        for (let i: u32 = 0; i < values.length; i++) {
-            const contractMap = values[i];
-            const keys = contractMap.keys();
-
-            for (let j: u32 = 0; j < keys.length; j++) {
-                result.push(keys[j]);
+        for (let i: i32 = 0; i < values.length; i++) {
+            const contract = keys[i];
+            if (!contract) {
+                continue;
             }
-        }
 
-        return result;
-    }
-
-    private getMethodByName(name: string): ContractFunction {
-        const values = this.methodMap.values();
-
-        for (let i: u32 = 0; i < values.length; i++) {
             const contractMap = values[i];
-            const handler = contractMap.get(name);
+            const handler = contractMap.add(selector);
 
             if (handler) {
-                return handler;
+                return contract;
             }
         }
 
-        throw new Error(`Method ${name} not found.`);
+        throw new Error(`Selector ${selector} not found.`);
     }
 }
 

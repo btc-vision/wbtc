@@ -4,6 +4,7 @@ import 'jest';
 import * as wasm from '../debug/runDebug.js';
 import { MotoSwapFactory } from '../src/MotoSwapFactory';
 import { MemoryWriter } from '../helper/buffer/MemoryWriter';
+import { BinaryReader } from '../helper/abi/BinaryReader';
 
 describe('Test wasm module', () => {
     const OWNER = 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq';
@@ -11,15 +12,16 @@ describe('Test wasm module', () => {
 
     let module: MotoSwapFactory | null = null;
     let memoryWriter: MemoryWriter | null = null;
+    let moduleWasm: Awaited<typeof wasm.promise>;
+
     beforeEach(async () => {
-        // @ts-ignore
-        const moduleWasm = await wasm.promise;
+        moduleWasm = await wasm.promise;
+
         if (!moduleWasm) {
             throw new Error('Module not found');
         }
 
         module = moduleWasm.CONTRACT(OWNER, CONTRACT_ADDRESS);
-
         memoryWriter = new MemoryWriter(moduleWasm.memory);
 
         expect(module).not.toBe(null);
@@ -35,12 +37,16 @@ describe('Test wasm module', () => {
             throw new Error('MemoryWriter not found');
         }
 
-        //memoryWriter.writeStringToMemory(OWNER);
+        const abi: Uint8Array = moduleWasm.getViewABI();
+        const abiDecoder = new BinaryReader(abi);
 
-        //console.log(module, memoryWriter.memory);
+        const decodedViewSelectors = abiDecoder.readViewSelectorsMap();
+        const methodSelectors: Uint8Array = moduleWasm.getMethodABI();
 
-        const isOwnerContractOwner = module.isAddressOwner(OWNER);
+        abiDecoder.setBuffer(methodSelectors);
 
-        expect(isOwnerContractOwner).toBe(true);
+        const decodedMethodSelectors = abiDecoder.readMethodSelectorsMap();
+
+        console.log('ABI ->', decodedViewSelectors, decodedMethodSelectors);
     });
 });

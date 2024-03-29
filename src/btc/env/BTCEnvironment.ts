@@ -5,10 +5,12 @@ import { MemorySlotData } from '../memory/MemorySlot';
 import { EvaluatedResult } from './types/EvaluatedResult';
 import { u256 } from 'as-bignum/assembly';
 import { ContractDefaults } from '../lang/ContractDefaults';
-import { ABIRegistry } from '../universal/ABIRegistry';
+import { ABIRegistry, Calldata } from '../universal/ABIRegistry';
+import { BytesReader } from '../buffer/BytesReader';
+import { Selector } from '../math/abi';
+import { BytesWriter } from '../buffer/BytesWriter';
 
 export type BlockchainStorage = Map<Address, Map<MemorySlotPointer, MemorySlotData>>;
-
 
 export class BlockchainEnvironment {
     private requiredStorage: Map<Address, Set<MemorySlotPointer>> = new Map();
@@ -16,13 +18,26 @@ export class BlockchainEnvironment {
     private contracts: Map<Address, BTCContract> = new Map();
 
     private defaults: ContractDefaults = new ContractDefaults();
+    private isInitialized: boolean = false;
 
     constructor() {
 
     }
 
+    public requireInitialization(): void {
+        if (!this.isInitialized) {
+            throw new Error('Not initialized');
+        }
+    }
+
     public init(owner: Address, self: Address): ContractDefaults {
+        if (this.isInitialized) {
+            throw new Error('Already initialized');
+        }
+
         this.defaults.loadContractDefaults(owner, self);
+
+        this.isInitialized = true;
 
         return this.defaults;
     }
@@ -30,6 +45,22 @@ export class BlockchainEnvironment {
     public reset(): void {
         this.storage.clear();
         this.requiredStorage.clear();
+    }
+
+    public call(self: BTCContract, destinationContract: Address, method: Selector, calldata: Calldata): BytesReader {
+        const contract: BTCContract = this.contracts.get(destinationContract);
+        if (!contract) {
+            throw new Error(`Contract not found for address ${destinationContract}`);
+        }
+
+        const methodToCall: BTCContract | null = ABIRegistry.hasMethodByContract(contract, method);
+        if (!methodToCall) {
+            throw new Error(`Method not found for selector ${method}`);
+        }
+
+        const result: BytesWriter = methodToCall.callMethod(method, calldata, self.self);
+
+        return result.toBytesReader();
     }
 
     public getStorageAt(address: Address, pointer: MemorySlotPointer): MemorySlotData {
@@ -59,7 +90,13 @@ export class BlockchainEnvironment {
         this.contracts.set(address, contract);
     }
 
+    public hasContract(address: Address): bool {
+        return this.contracts.has(address);
+    }
+
     public getContract(address: Address): BTCContract {
+        if (!this.contracts.has(address)) throw new Error(`Contract not found for address ${address}`);
+
         return this.contracts.get(address);
     }
 
@@ -70,8 +107,12 @@ export class BlockchainEnvironment {
         this.requiredStorage.set(address, slots);
     }
 
-    public getContractABI(): string[] {
-        return ABIRegistry.listAllMethods();
+    public getViewSelectors(): Uint8Array {
+        return ABIRegistry.getViewSelectors();
+    }
+
+    public getMethodSelectors(): Uint8Array {
+        return ABIRegistry.getMethodSelectors();
     }
 
     public loadStorage(address: Address, pointers: MemorySlotPointer[], data: Uint64Array[]): void {

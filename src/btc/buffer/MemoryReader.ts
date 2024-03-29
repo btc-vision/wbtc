@@ -1,5 +1,5 @@
 import { u256 } from 'as-bignum/assembly';
-import { PointerReader } from './PointerReader';
+import { PointerReader } from './pointer/PointerReader';
 
 class MemoryReader {
     private currentMemoryOffset: u8 = 0;
