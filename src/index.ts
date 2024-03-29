@@ -1,4 +1,4 @@
-import { MotoSwapFactory } from './MotoSwapFactory';
+import { MotoSwapFactory } from '../contracts/MotoSwapFactory';
 import { Blockchain } from './btc/env';
 import { Address } from './btc/types/Address';
 

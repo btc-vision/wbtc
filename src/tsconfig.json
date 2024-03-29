@@ -3,5 +3,7 @@
   "include": [
     "./*.ts",
     "./**/*.ts",
+    "../contracts/**/*.ts",
+    "../contracts/*.ts"
   ]
 }
