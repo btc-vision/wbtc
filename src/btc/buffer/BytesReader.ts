@@ -1,4 +1,4 @@
-import { PointerReader } from './pointer/PointerReader';
+import { PointerReader } from './memory/pointer/PointerReader';
 import { Address, ADDRESS_BYTE_LENGTH } from '../types/Address';
 import { Selector } from '../math/abi';
 import { u256 } from 'as-bignum/assembly';

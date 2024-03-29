@@ -3,7 +3,7 @@ import 'jest';
 // @ts-ignore
 import * as wasm from '../debug/runDebug.js';
 import { MotoSwapFactory } from '../src/MotoSwapFactory';
-import { MemoryWriter } from '../helper/buffer/MemoryWriter';
+import { MemoryWriter } from '../helper/buffer/memory/MemoryWriter';
 import { BinaryReader } from '../helper/abi/BinaryReader';
 import { ABICoder } from '../helper/abi/ABICoder';
 

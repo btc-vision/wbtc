@@ -12,7 +12,7 @@ export class MemoryWriter {
     constructor(memory?: WebAssembly.Memory) {
         this.memory = memory || new WebAssembly.Memory({ initial: 1, maximum: 65536, shared: false });
         this.uint8Array = new Uint8Array(this.memory.buffer);
-        
+
         this.currentPointer = this.getMemoryAtOffset();
     }
 
