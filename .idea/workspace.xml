@@ -5,15 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="416d6194-4e78-4683-bece-f002bbf19e08" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/btc/memory/KeyMerger.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/btc/memory/MultiAddressMemoryMap.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/contracts/CBRC20.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/contracts/CBRC20.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/env/BTCEnvironment.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/env/BTCEnvironment.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/env/types/EvaluatedResult.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/math/abi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/math/abi.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/memory/MemoryMap.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/memory/AddressMemoryMap.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/memory/MemorySlotPointer.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/memory/MemorySlotPointer.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/btc/memory/AddressMemoryMap.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/memory/AddressMemoryMap.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,7 +79,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1711602910264</updated>
-      <workItem from="1711602911275" duration="52443000" />
+      <workItem from="1711602911275" duration="52780000" />
     </task>
     <servers />
   </component>

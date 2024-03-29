@@ -32,7 +32,7 @@ export class AddressMemoryMap<K extends string, V extends MemorySlotData<u256>> 
         return Blockchain.hasStorageAt(this.memoryAllocatorAddress, this.pointer, encodePointer(key));
     }
 
-    public delete(key: K): bool {
+    public delete(_key: K): bool {
         throw new Error('Method not implemented.');
     }
 
