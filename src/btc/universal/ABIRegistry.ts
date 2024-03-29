@@ -14,9 +14,13 @@ export type PropertyABIMap = Set<ABIRegistryItem>;
 export type SelectorsMap = Map<BTCContract, PropertyABIMap>;
 export type MethodMap = Map<BTCContract, ContractABIMap>;
 
+export type ViewSelectorsMap = Map<BTCContract, Set<Selector>>;
+
 class ABIRegistryBase {
     private methodMap: MethodMap = new Map();
     private selectors: SelectorsMap = new Map();
+
+    private viewSelectors: ViewSelectorsMap = new Map();
 
     // Register properties with their selectors and handlers
     public defineGetterSelector(contract: BTCContract, name: string): void {
@@ -34,10 +38,23 @@ class ABIRegistryBase {
 
         contractMap.add(selectorWriter.getBuffer());
 
+        let viewSelectorMap: Set<Selector>;
+        if (!this.viewSelectors.has(contract)) {
+            viewSelectorMap = new Set();
+        } else {
+            viewSelectorMap = this.viewSelectors.get(contract);
+        }
+
+        if (!viewSelectorMap.has(selector)) {
+            viewSelectorMap.add(selector);
+
+            this.viewSelectors.set(contract, viewSelectorMap);
+        }
+
         this.selectors.set(contract, contractMap);
     }
 
-    public getSelectorForContract(contract: BTCContract): ABIRegistryItem {
+    public getSelectorsForContract(contract: BTCContract): ABIRegistryItem {
         if (!this.selectors.has(contract)) {
             throw new Error(`Contract not found.`);
         }
@@ -48,6 +65,50 @@ class ABIRegistryBase {
         }
 
         return contractMap.values()[0];
+    }
+
+    public hasSelectorForView(selector: Selector, contract: BTCContract | null = null): BTCContract | null {
+        if (contract === null) {
+            return this.hasViewSelectorInAllContracts(selector);
+        }
+
+        return this.hasViewForContract(contract, selector);
+    }
+
+    public hasViewSelectorInAllContracts(selector: Selector): BTCContract | null {
+        const keys = this.viewSelectors.keys();
+        const values = this.viewSelectors.values();
+
+        for (let i: i32 = 0; i < values.length; i++) {
+            const contract = keys[i];
+            if (!contract) {
+                continue;
+            }
+
+            const contractMap = values[i];
+            if (contractMap.has(selector)) {
+                return contract;
+            }
+        }
+
+        throw new Error(`Selector ${selector} not found.`);
+    }
+
+    public hasViewForContract(contract: BTCContract, selector: Selector): BTCContract | null {
+        if (!this.viewSelectors.has(contract)) {
+            throw new Error(`Contract not found.`);
+        }
+
+        const contractMap = this.viewSelectors.get(contract);
+        if (!contractMap) {
+            throw new Error(`Contract not found.`);
+        }
+
+        if (contractMap.has(selector)) {
+            return contract;
+        }
+
+        return null;
     }
 
     public getViewSelectors(): Uint8Array {

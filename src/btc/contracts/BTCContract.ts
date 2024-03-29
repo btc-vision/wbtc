@@ -63,6 +63,21 @@ export abstract class BTCContract implements IBTC {
         }
     }
 
+    public callView(method: Selector): BytesWriter {
+        switch (method) {
+            case encodeSelector('self'):
+                this.response.writeAddress(this.self);
+                break;
+            case encodeSelector('owner'):
+                this.response.writeAddress(this.owner);
+                break;
+            default:
+                throw new Error('Method not found');
+        }
+
+        return this.response;
+    }
+
     protected isSelf(address: Address): boolean {
         return this._self === address;
     }
