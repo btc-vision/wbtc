@@ -5,6 +5,7 @@ import { MemorySlotData } from '../memory/MemorySlot';
 import { EvaluatedResult } from './types/EvaluatedResult';
 import { u256 } from 'as-bignum/assembly';
 import { ContractDefaults } from '../lang/ContractDefaults';
+import { ABIRegistry } from '../universal/ABIRegistry';
 
 export type BlockchainStorage = Map<Address, Map<MemorySlotPointer, MemorySlotData>>;
 
@@ -69,6 +70,9 @@ export class BlockchainEnvironment {
         this.requiredStorage.set(address, slots);
     }
 
+    public getContractABI(): string[] {
+        return ABIRegistry.listAllMethods();
+    }
 
     public loadStorage(address: Address, pointers: MemorySlotPointer[], data: Uint64Array[]): void {
         this.storage.clear();

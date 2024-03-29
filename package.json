@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "test": "jest",
-        "asbuild:debug": "asc src/index.ts --target debug",
+        "asbuild:debug": "asc src/index.ts --target debug --exportTable --measure",
         "asbuild:release": "asc src/index.ts --target release",
         "asbuild": "npm run asbuild:debug && npm run asbuild:release",
         "start": "npx serve ."
@@ -27,6 +27,7 @@
         }
     },
     "dependencies": {
+        "@assemblyscript/loader": "^0.27.25",
         "@babel/preset-env": "^7.24.3",
         "as-bignum": "^0.3.0",
         "babel-plugin-transform-import-meta": "^2.2.1",

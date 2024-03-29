@@ -3,12 +3,14 @@ import 'jest';
 // @ts-ignore
 import * as wasm from '../debug/runDebug.js';
 import { MotoSwapFactory } from '../src/MotoSwapFactory';
+import { MemoryWriter } from '../helper/buffer/MemoryWriter';
 
 describe('Test wasm module', () => {
     const OWNER = 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq';
     const CONTRACT_ADDRESS = 'bc1p5d7rjq7g6rdk2yhzks9smlaqtedr4dekq08ge8ztwac72sfr9rusxg3297';
 
     let module: MotoSwapFactory | null = null;
+    let memoryWriter: MemoryWriter | null = null;
     beforeEach(async () => {
         // @ts-ignore
         const moduleWasm = await wasm.promise;
@@ -18,11 +20,8 @@ describe('Test wasm module', () => {
 
         module = moduleWasm.CONTRACT(OWNER, CONTRACT_ADDRESS);
 
-        expect(module).not.toBe(null);
-        expect(module).not.toBe(undefined);
-    });
+        memoryWriter = new MemoryWriter(moduleWasm.memory);
 
-    it('Loaded wasm', async () => {
         expect(module).not.toBe(null);
         expect(module).not.toBe(undefined);
     });
@@ -32,7 +31,13 @@ describe('Test wasm module', () => {
             throw new Error('Module not found');
         }
 
-        console.log(module);
+        if (!memoryWriter) {
+            throw new Error('MemoryWriter not found');
+        }
+
+        //memoryWriter.writeStringToMemory(OWNER);
+
+        //console.log(module, memoryWriter.memory);
 
         const isOwnerContractOwner = module.isAddressOwner(OWNER);
 

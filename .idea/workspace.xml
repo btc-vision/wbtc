@@ -5,8 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="416d6194-4e78-4683-bece-f002bbf19e08" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/btc/universal/ABIRegistry.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/idk.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/contracts/BTCContract.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/contracts/BTCContract.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/btc/env/BTCEnvironment.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/env/BTCEnvironment.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/example.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tests/example.test.ts" afterDir="false" />
     </list>
@@ -18,6 +22,7 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="tsconfig.json" />
         <option value="TypeScript File" />
       </list>
     </option>
@@ -76,7 +81,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1711602910264</updated>
-      <workItem from="1711602911275" duration="18504000" />
+      <workItem from="1711602911275" duration="25110000" />
     </task>
     <servers />
   </component>
