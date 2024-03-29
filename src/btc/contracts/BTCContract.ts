@@ -5,13 +5,6 @@ import { ABIRegistry, Calldata } from '../universal/ABIRegistry';
 import { BytesWriter } from '../buffer/BytesWriter';
 import { encodeSelector, Selector } from '../math/abi';
 
-export function proxy(contract: string, method: string, calldata: Calldata): BytesWriter {
-    const self: BTCContract = Blockchain.getContract(contract);
-
-    // @ts-ignore
-    return self[method](calldata);
-}
-
 export abstract class BTCContract implements IBTC {
     public readonly response: BytesWriter = new BytesWriter();
 
