@@ -5,6 +5,7 @@ import * as wasm from '../debug/runDebug.js';
 import { MotoSwapFactory } from '../src/MotoSwapFactory';
 import { MemoryWriter } from '../helper/buffer/MemoryWriter';
 import { BinaryReader } from '../helper/abi/BinaryReader';
+import { ABICoder } from '../helper/abi/ABICoder';
 
 describe('Test wasm module', () => {
     const OWNER = 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq';
@@ -37,6 +38,7 @@ describe('Test wasm module', () => {
             throw new Error('MemoryWriter not found');
         }
 
+        const abiCoder: ABICoder = new ABICoder();
         const abi: Uint8Array = moduleWasm.getViewABI();
         const abiDecoder = new BinaryReader(abi);
 
@@ -47,6 +49,13 @@ describe('Test wasm module', () => {
 
         const decodedMethodSelectors = abiDecoder.readMethodSelectorsMap();
 
-        console.log('ABI ->', decodedViewSelectors, decodedMethodSelectors);
+        const selector = abiCoder.encodeSelector('isAddressOwner');
+        const _selectorWASM = decodedMethodSelectors.values().next().value.values().next().value;
+        const selectorWASM = abiCoder.numericSelectorToHex(_selectorWASM);
+
+        console.log('ABI ->', decodedViewSelectors, decodedMethodSelectors, {
+            selectorComputed: selector,
+            selectorWASM: selectorWASM,
+        });
     });
 });
