@@ -1,6 +1,6 @@
-import { BTCContract } from './btc/contracts/BTCContract';
-import { Address } from './btc/types/Address';
-import { consoleLog } from './btc/env';
+import { BTCContract } from '../src/btc/contracts/BTCContract';
+import { Address } from '../src/btc/types/Address';
+import { consoleLog } from '../src/btc/env';
 
 export class MotoSwapFactory extends BTCContract {
 
