@@ -24,7 +24,6 @@ export class BlockchainEnvironment {
     private isInitialized: boolean = false;
 
     constructor() {
-
     }
 
     public requireInitialization(): void {
@@ -33,12 +32,12 @@ export class BlockchainEnvironment {
         }
     }
 
-    public init(owner: Address, self: Address): ContractDefaults {
+    public init(owner: Address, contractAddress: Address): ContractDefaults {
         if (this.isInitialized) {
             throw new Error('Already initialized');
         }
 
-        this.defaults.loadContractDefaults(owner, self);
+        this.defaults.loadContractDefaults(owner, contractAddress);
 
         this.isInitialized = true;
 
@@ -61,7 +60,7 @@ export class BlockchainEnvironment {
             throw new Error(`Method not found for selector ${method}`);
         }
 
-        const result: BytesWriter = methodToCall.callMethod(method, calldata, self.self);
+        const result: BytesWriter = methodToCall.callMethod(method, calldata, self.address);
 
         return result.toBytesReader();
     }

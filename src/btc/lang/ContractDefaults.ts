@@ -4,7 +4,7 @@ import { Potential } from './Definitions';
 
 export class ContractDefaults {
     public owner: Potential<Address> = null;
-    public self: Potential<Address> = null;
+    public contractAddress: Potential<Address> = null;
 
     public loaded: boolean = false;
 
@@ -13,9 +13,9 @@ export class ContractDefaults {
 
 
     get selfAddress(): Address {
-        if (!this.self) throw new Error('Self address not found');
+        if (!this.contractAddress) throw new Error('Self address not found');
 
-        return this.self as Address;
+        return this.contractAddress as Address;
     }
 
     get ownerAddress(): Address {
@@ -24,13 +24,13 @@ export class ContractDefaults {
         return this.owner as Address;
     }
 
-    public loadContractDefaults(owner: Address, self: Address): void {
+    public loadContractDefaults(owner: Address, contractAddress: Address): void {
         if (this.loaded) throw new Error('Defaults already loaded');
 
         this.owner = owner; //
-        this.self = self; //memoryReader.readStringFromMemory(62);
+        this.contractAddress = contractAddress; //memoryReader.readStringFromMemory(62);
 
-        if (!this.self) {
+        if (!this.contractAddress) {
             throw new Error('NO CONTRACT INITIALIZER FOUND.');
         }
 
