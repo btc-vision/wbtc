@@ -3,7 +3,7 @@ import 'jest';
 // @ts-ignore
 import * as wasm from '../config/runDebug.js';
 import { MotoSwapFactory } from '../contracts/MotoSwapFactory';
-import { BinaryReader, ContractABIMap, MethodMap, PropertyABIMap, SelectorsMap } from '../helper/abi/BinaryReader';
+import { BinaryReader, ContractABIMap, MethodMap, PropertyABIMap, SelectorsMap } from '../helper/buffer/BinaryReader';
 import { ABICoder, ABIDataTypes } from '../helper/abi/ABICoder';
 
 describe('I should be able to create my own smart contract for Bitcoin.', () => {

@@ -1,4 +1,3 @@
-import { PointerReader } from './memory/pointer/PointerReader';
 import { Address, ADDRESS_BYTE_LENGTH } from '../types/Address';
 import { Selector } from '../math/abi';
 import { u256 } from 'as-bignum/assembly';
@@ -49,12 +48,6 @@ export class BytesReader {
         }
 
         return u256.from(next32Bytes);
-    }
-
-    public readPointer(): PointerReader {
-        const pointer = this.readU256();
-
-        return new PointerReader(pointer);
     }
 
     public readBytes(length: u32, zeroStop: boolean = false): Uint8Array {
