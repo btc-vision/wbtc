@@ -4,15 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="416d6194-4e78-4683-bece-f002bbf19e08" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/buffer/BytesWriter.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/buffer/BytesWriter.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/contracts/BTCContract.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/contracts/BTCContract.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/env/BTCEnvironment.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/env/BTCEnvironment.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/interfaces/IBTC.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/interfaces/IBTC.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/lang/ContractDefaults.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/lang/ContractDefaults.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.ts" afterDir="false" />
-    </list>
+    <list default="true" id="416d6194-4e78-4683-bece-f002bbf19e08" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -38,9 +30,9 @@
   <component name="OptimizeOnSaveOptions">
     <option name="myRunOnSave" value="true" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 5
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
   <component name="ProjectId" id="2eIrPk9dIlup0jz7hPjsGG5KFRZ" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -51,7 +43,7 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "dev",
-    "last_opened_file_path": "C:/Users/felix/Desktop/RSNet",
+    "last_opened_file_path": "C:/Users/felix/Desktop/btc/BtcSmartContract",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -85,6 +77,7 @@
       <option name="presentableId" value="Default" />
       <updated>1711602910264</updated>
       <workItem from="1711602911275" duration="58652000" />
+      <workItem from="1711838939299" duration="343000" />
     </task>
     <servers />
   </component>
