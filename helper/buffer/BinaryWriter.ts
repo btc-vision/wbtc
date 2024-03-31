@@ -13,7 +13,7 @@ import {
 } from './types/math';
 import { BinaryReader } from './BinaryReader';
 
-export class BytesWriter {
+export class BinaryWriter {
     private currentOffset: u32 = 0;
     private buffer: DataView = new DataView(new ArrayBuffer(ADDRESS_BYTE_LENGTH));
 
