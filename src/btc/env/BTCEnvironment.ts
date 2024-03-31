@@ -118,17 +118,11 @@ export class BlockchainEnvironment {
             this.requiredStorage.set(address, new Set<MemorySlotPointer>());
         }
 
-        let slots = this.requiredStorage.get(address);
-        if (!slots) {
-            throw new Error(`Slots not found for address ${address}`);
-        }
-
+        const slots = this.requiredStorage.get(address);
         const pointerHash = encodePointerHash(pointer, subPointer);
         if (!slots.has(pointerHash)) {
             slots.add(pointerHash);
         }
-
-        this.requiredStorage.set(address, slots);
     }
 
     public getViewSelectors(): Uint8Array {
@@ -164,7 +158,6 @@ export class BlockchainEnvironment {
 
     public storageToBytes(): Uint8Array {
         const memoryWriter: BytesWriter = new BytesWriter();
-
         memoryWriter.writeU32(this.storage.size);
 
         const keys: Address[] = this.storage.keys();
