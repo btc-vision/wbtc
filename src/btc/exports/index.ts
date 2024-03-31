@@ -4,8 +4,9 @@ import { Selector } from '../math/abi';
 import { BytesWriter } from '../buffer/BytesWriter';
 import { BTCContract } from '../contracts/BTCContract';
 import { Address } from '../types/Address';
+import { BytesReader } from '../buffer/BytesReader';
 
-export function readMethod(method: Selector, contract: BTCContract | null, calldata: Calldata, caller: Address | null): Uint8Array {
+export function readMethod(method: Selector, contract: BTCContract | null, data: Uint8Array, caller: Address | null): Uint8Array {
     Blockchain.requireInitialization();
 
     const methodToCall = ABIRegistry.hasMethodBySelector(method, contract);
@@ -13,6 +14,7 @@ export function readMethod(method: Selector, contract: BTCContract | null, calld
         throw new Error(`Method not found for selector ${method}`);
     }
 
+    const calldata: Calldata = new BytesReader(data);
     const result: BytesWriter = methodToCall.callMethod(method, calldata, caller);
 
     return result.getBuffer();
