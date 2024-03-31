@@ -68,23 +68,21 @@ export class BlockchainEnvironment {
         this.ensureStorageAtAddress(address);
 
         const storage = this.storage.get(address);
-        if (!storage) {
-            throw new Error(`Storage for address ${address} not found`);
-        }
-
         const pointerHash = encodePointerHash(pointer, subPointer);
         this.ensureStorageAtPointer(storage, pointerHash);
+
+        this.requireStorage(address, pointer, subPointer);
 
         return storage.get(pointerHash);
     }
 
     public hasStorageAt(address: Address, pointer: u16, subPointer: MemorySlotPointer): bool {
-        const storage = this.storage.get(address);
-        if (!storage) {
-            return false;
-        }
+        this.ensureStorageAtAddress(address);
 
+        const storage = this.storage.get(address);
         const pointerHash = encodePointerHash(pointer, subPointer);
+
+        this.requireStorage(address, pointer, subPointer);
 
         return storage.has(pointerHash);
     }
@@ -93,12 +91,10 @@ export class BlockchainEnvironment {
         this.ensureStorageAtAddress(address);
 
         const storage = this.storage.get(address);
-        if (!storage) {
-            throw new Error(`Storage for address ${address} not found`);
-        }
-
         const pointerHash = encodePointerHash(pointer, keyPointer);
         this.ensureStorageAtPointer(storage, pointerHash);
+
+        this.requireStorage(address, pointer, keyPointer);
 
         storage.set(pointerHash, value);
     }
