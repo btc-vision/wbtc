@@ -10,7 +10,7 @@ export abstract class BTCContract implements IBTC {
     public readonly response: BytesWriter = new BytesWriter();
 
     private readonly _owner: string;
-    private readonly _self: string;
+    private readonly _address: string;
 
     protected constructor(self: Address, owner: Address) {
         if (!self) {
@@ -28,29 +28,25 @@ export abstract class BTCContract implements IBTC {
         //memory.grow(1); // 64k allocate memory for the contract
 
         this._owner = owner;
-        this._self = self;
+        this._address = self;
 
         if (!this._owner) {
             throw new Revert('Owner is required');
         }
 
-        if (!this._self) {
+        if (!this._address) {
             throw new Revert('Self is required');
         }
 
         this.defineProtectedSelectors();
     }
 
-    public get self(): string {
-        return this._self;
+    public get address(): string {
+        return this._address;
     }
 
     public get owner(): string {
         return this._owner;
-    }
-
-    public defineGetterSelector(name: string): void {
-        ABIRegistry.defineGetterSelector(this, name);
     }
 
     public abstract defineSelectors(): void;
@@ -67,7 +63,7 @@ export abstract class BTCContract implements IBTC {
     public callView(method: Selector): BytesWriter {
         switch (method) {
             case encodeSelector('self'):
-                this.response.writeAddress(this.self);
+                this.response.writeAddress(this.address);
                 break;
             case encodeSelector('owner'):
                 this.response.writeAddress(this.owner);
@@ -79,8 +75,12 @@ export abstract class BTCContract implements IBTC {
         return this.response;
     }
 
+    protected defineGetterSelector(name: string): void {
+        ABIRegistry.defineGetterSelector(this, name);
+    }
+
     protected isSelf(address: Address): boolean {
-        return this._self === address;
+        return this._address === address;
     }
 
     protected onlyOwner(caller: Address): void {

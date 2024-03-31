@@ -81,7 +81,7 @@ export class BytesWriter {
             const key = keys[i];
             const value = map.get(key);
 
-            this.writeAddress(key.self);
+            this.writeAddress(key.address);
             this.writeSelectors(value);
         }
     }
@@ -94,7 +94,7 @@ export class BytesWriter {
             const key = keys[i];
             const value = map.get(key);
 
-            this.writeAddress(key.self);
+            this.writeAddress(key.address);
             this.writeMethodSelectorMap(value);
         }
     }

@@ -12,4 +12,5 @@ export function CONTRACT(owner: Address, self: Address): BTCContract {
     return contract;
 }
 
+
 export * from './btc/exports';

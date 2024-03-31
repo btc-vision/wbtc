@@ -1,18 +1,16 @@
 import 'jest';
 
 // @ts-ignore
-import * as wasm from '../debug/runDebug.js';
+import * as wasm from '../config/runDebug.js';
 import { MotoSwapFactory } from '../contracts/MotoSwapFactory';
-import { MemoryWriter } from '../helper/buffer/memory/MemoryWriter';
-import { BinaryReader, ContractABIMap, MethodMap, PropertyABIMap, SelectorsMap } from '../helper/abi/BinaryReader';
+import { BinaryReader, ContractABIMap, MethodMap, PropertyABIMap, SelectorsMap } from '../helper/buffer/BinaryReader';
 import { ABICoder, ABIDataTypes } from '../helper/abi/ABICoder';
 
-describe('I should be able to create my own contract for Bitcoin.', () => {
+describe('I should be able to create my own smart contract for Bitcoin.', () => {
     const OWNER = 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq';
     const CONTRACT_ADDRESS = 'bc1p5d7rjq7g6rdk2yhzks9smlaqtedr4dekq08ge8ztwac72sfr9rusxg3297';
 
     let module: MotoSwapFactory | null = null;
-    let memoryWriter: MemoryWriter | null = null;
     let moduleWasm: Awaited<typeof wasm.promise>;
 
     let decodedViewSelectors: SelectorsMap;
@@ -31,7 +29,6 @@ describe('I should be able to create my own contract for Bitcoin.', () => {
         }
 
         module = moduleWasm.CONTRACT(OWNER, CONTRACT_ADDRESS);
-        memoryWriter = new MemoryWriter(moduleWasm.memory);
 
         const abi: Uint8Array = moduleWasm.getViewABI();
         const abiDecoder = new BinaryReader(abi);
