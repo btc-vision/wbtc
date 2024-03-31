@@ -166,7 +166,7 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
     }
 
     protected _balanceOf(owner: string): u256 {
-        if (!this.balanceOfMap.has(owner)) throw new Revert();
+        if (!this.balanceOfMap.has(owner)) return u256.Zero;
 
         return this.balanceOfMap.get(owner);
     }

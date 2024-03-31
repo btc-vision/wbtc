@@ -6,14 +6,13 @@ import { u256 } from 'as-bignum/assembly';
 import { ContractDefaults } from '../lang/ContractDefaults';
 import { ABIRegistry, Calldata } from '../universal/ABIRegistry';
 import { BytesReader } from '../buffer/BytesReader';
-import { Selector } from '../math/abi';
+import { encodePointerHash, Selector } from '../math/abi';
 import { BytesWriter } from '../buffer/BytesWriter';
 
-export type SubPointerStorage = Map<MemorySlotPointer, MemorySlotData<u256>>;
-export type PointerStorage = Map<u16, SubPointerStorage>;
+export type PointerStorage = Map<MemorySlotPointer, MemorySlotData<u256>>;
 export type BlockchainStorage = Map<Address, PointerStorage>;
 
-export type RequiredStorage = Map<Address, Map<u16, Set<MemorySlotPointer>>>;
+export type RequiredStorage = Map<Address, Set<MemorySlotPointer>>;
 
 export class BlockchainEnvironment {
     private requiredStorage: RequiredStorage = new Map();
@@ -69,58 +68,35 @@ export class BlockchainEnvironment {
         this.ensureStorageAtAddress(address);
 
         const storage = this.storage.get(address);
-        if (!storage) {
-            throw new Error(`Storage for address ${address} not found`);
-        }
+        const pointerHash = encodePointerHash(pointer, subPointer);
+        this.ensureStorageAtPointer(storage, pointerHash);
 
-        this.ensureStorageAtPointer(storage, pointer);
+        this.requireStorage(address, pointer, subPointer);
 
-        const subStorage = storage.get(pointer);
-        if (!subStorage) {
-            throw new Error(`Sub-storage slot ${subPointer} not found for address ${address}`);
-        }
-
-        this.ensureStorageSubPointer(subStorage, subPointer);
-
-        if (!subStorage.has(subPointer)) throw new Error(`Sub-storage slot ${subPointer} not found for address ${address}`);
-
-        return subStorage.get(subPointer);
+        return storage.get(pointerHash);
     }
 
     public hasStorageAt(address: Address, pointer: u16, subPointer: MemorySlotPointer): bool {
+        this.ensureStorageAtAddress(address);
+
         const storage = this.storage.get(address);
-        if (!storage) {
-            return false;
-        }
+        const pointerHash = encodePointerHash(pointer, subPointer);
 
-        if (!storage.has(pointer)) {
-            return false;
-        }
+        this.requireStorage(address, pointer, subPointer);
 
-        const subStorage = storage.get(pointer);
-        if (!subStorage) {
-            return false;
-        }
-
-        return subStorage.has(subPointer);
+        return storage.has(pointerHash);
     }
 
     public setStorageAt(address: Address, pointer: u16, keyPointer: MemorySlotPointer, value: MemorySlotData<u256>): void {
         this.ensureStorageAtAddress(address);
 
         const storage = this.storage.get(address);
-        if (!storage) {
-            throw new Error(`Storage for address ${address} not found`);
-        }
+        const pointerHash = encodePointerHash(pointer, keyPointer);
+        this.ensureStorageAtPointer(storage, pointerHash);
 
-        this.ensureStorageAtPointer(storage, pointer);
+        this.requireStorage(address, pointer, keyPointer);
 
-        const subStorage = storage.get(pointer);
-        if (!subStorage) {
-            throw new Error(`Sub-storage slot ${keyPointer} not found for address ${address}`);
-        }
-
-        subStorage.set(keyPointer, value);
+        storage.set(pointerHash, value);
     }
 
     public setContract(address: Address, contract: BTCContract): void {
@@ -139,26 +115,14 @@ export class BlockchainEnvironment {
 
     public requireStorage(address: Address, pointer: u16, subPointer: MemorySlotPointer): void {
         if (!this.requiredStorage.has(address)) {
-            this.requiredStorage.set(address, new Map<u16, Set<MemorySlotPointer>>());
+            this.requiredStorage.set(address, new Set<MemorySlotPointer>());
         }
 
-        let slots = this.requiredStorage.get(address);
-        if (!slots) {
-            throw new Error(`Slots not found for address ${address}`);
+        const slots = this.requiredStorage.get(address);
+        const pointerHash = encodePointerHash(pointer, subPointer);
+        if (!slots.has(pointerHash)) {
+            slots.add(pointerHash);
         }
-
-        if (!slots.has(pointer)) {
-            slots.set(pointer, new Set<MemorySlotPointer>());
-        }
-
-        let subPointers = slots.get(pointer);
-        if (!subPointers) {
-            throw new Error(`Sub-pointers not found for pointer ${pointer}`);
-        }
-
-        subPointers.add(subPointer);
-
-        this.requiredStorage.set(address, slots);
     }
 
     public getViewSelectors(): Uint8Array {
@@ -173,68 +137,74 @@ export class BlockchainEnvironment {
         this.storage.clear();
 
         const memoryReader: BytesReader = new BytesReader(data);
-        const contractsSize: u32 = memoryReader.readU16();
+        const contractsSize: u32 = memoryReader.readU32();
 
         for (let i: u32 = 0; i < contractsSize; i++) {
             const address: Address = memoryReader.readAddress();
             const storageSize: u32 = memoryReader.readU32();
 
+            this.ensureStorageAtAddress(address);
+            const storage: PointerStorage = this.storage.get(address);
+
             for (let j: u32 = 0; j < storageSize; j++) {
-                const pointer: u16 = memoryReader.readU16();
-                const subPointerSize: u32 = memoryReader.readU64();
+                const keyPointer: MemorySlotPointer = memoryReader.readU256();
+                const value: MemorySlotData<u256> = memoryReader.readU256();
 
-                const subPointerStorage: SubPointerStorage = new Map<MemorySlotPointer, MemorySlotData<u256>>();
-                for (let k: u32 = 0; k < subPointerSize; k++) {
-                    const keyPointer: MemorySlotPointer = memoryReader.readU256();
-                    const value: u256 = memoryReader.readU256();
-
-                    subPointerStorage.set(keyPointer, value);
-                }
-
-                const storage: PointerStorage = new Map<u16, SubPointerStorage>();
-                storage.set(pointer, subPointerStorage);
-
-                this.storage.set(address, storage);
+                this.ensureStorageAtPointer(storage, keyPointer);
+                storage.set(keyPointer, value);
             }
         }
     }
 
     public storageToBytes(): Uint8Array {
         const memoryWriter: BytesWriter = new BytesWriter();
-
         memoryWriter.writeU32(this.storage.size);
 
         const keys: Address[] = this.storage.keys();
         const values: PointerStorage[] = this.storage.values();
 
-        for (let i: u32 = 0; i < keys.length; i++) {
+        for (let i: i32 = 0; i < keys.length; i++) {
             const address: Address = keys[i];
             const storage: PointerStorage = values[i];
 
             memoryWriter.writeAddress(address);
 
-            const subKeys: u16[] = storage.keys();
-            const subValues: SubPointerStorage[] = storage.values();
+            const subKeys: MemorySlotPointer[] = storage.keys();
+            const subValues: MemorySlotData<u256>[] = storage.values();
 
             memoryWriter.writeU32(subKeys.length);
 
-            for (let j: u32 = 0; j < subKeys.length; j++) {
-                const pointer: u16 = subKeys[j];
-                const subStorage: SubPointerStorage = subValues[j];
+            for (let j: i32 = 0; j < subKeys.length; j++) {
+                const pointer: MemorySlotPointer = subKeys[j];
+                const value: MemorySlotData<u256> = subValues[j];
 
-                memoryWriter.writeU16(pointer);
-                memoryWriter.writeU64(subStorage.size);
+                memoryWriter.writeU256(pointer);
+                memoryWriter.writeU256(value);
+            }
+        }
 
-                const subSubKeys: MemorySlotPointer[] = subStorage.keys();
-                const subSubValues: MemorySlotData<u256>[] = subStorage.values();
+        return memoryWriter.getBuffer();
+    }
 
-                for (let k: u32 = 0; k < subSubKeys.length; k++) {
-                    const keyPointer: MemorySlotPointer = subSubKeys[k];
-                    const value: u256 = subSubValues[k];
+    public writeRequiredStorage(): Uint8Array {
+        const memoryWriter: BytesWriter = new BytesWriter();
 
-                    memoryWriter.writeU256(keyPointer);
-                    memoryWriter.writeU256(value);
-                }
+        memoryWriter.writeU32(this.requiredStorage.size);
+
+        const keys: Address[] = this.requiredStorage.keys();
+        const values: Set<MemorySlotPointer>[] = this.requiredStorage.values();
+
+        for (let i: i32 = 0; i < keys.length; i++) {
+            const address: Address = keys[i];
+            const slots: Set<MemorySlotPointer> = values[i];
+
+            memoryWriter.writeAddress(address);
+            memoryWriter.writeU32(slots.size);
+
+            const slotKeys: MemorySlotPointer[] = slots.values();
+            for (let j: i32 = 0; j < slotKeys.length; j++) {
+                const slot: MemorySlotPointer = slotKeys[j];
+                memoryWriter.writeU256(slot);
             }
         }
 
@@ -243,19 +213,13 @@ export class BlockchainEnvironment {
 
     private ensureStorageAtAddress(address: Address): void {
         if (!this.storage.has(address)) {
-            this.storage.set(address, new Map<u16, SubPointerStorage>());
+            this.storage.set(address, new Map<u256, MemorySlotData<u256>>());
         }
     }
 
-    private ensureStorageAtPointer(storage: PointerStorage, pointer: u16): void {
+    private ensureStorageAtPointer(storage: PointerStorage, pointer: u256): void {
         if (!storage.has(pointer)) {
-            storage.set(pointer, new Map<MemorySlotPointer, MemorySlotData<u256>>());
-        }
-    }
-
-    private ensureStorageSubPointer(subStorage: SubPointerStorage, subPointer: MemorySlotPointer): void {
-        if (!subStorage.has(subPointer)) {
-            subStorage.set(subPointer, new u256());
+            storage.set(pointer, u256.Zero);
         }
     }
 }

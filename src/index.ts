@@ -3,7 +3,7 @@ import { Address } from './btc/types/Address';
 import { BTCContract } from './btc/contracts/BTCContract';
 import { Moto } from '../contracts/Moto';
 
-export function CONTRACT(owner: Address, self: Address): BTCContract {
+export function INIT(owner: Address, self: Address): BTCContract {
     const blockchainData = Blockchain.init(owner, self);
 
     const contract = new Moto(blockchainData.selfAddress, blockchainData.ownerAddress);

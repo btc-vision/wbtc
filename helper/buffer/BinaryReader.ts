@@ -1,23 +1,19 @@
-const ADDRESS_BYTE_LENGTH: number = 62;
-
-type Address = string;
-type i32 = number;
-type u8 = number;
-type u16 = number;
-type u32 = number;
-type f32 = number;
-
-export type Selector = number;
-
-export interface ABIRegistryItem {
-    name: string,
-    selector: Selector
-}
-
-export type ContractABIMap = Set<Selector>;
-export type PropertyABIMap = Map<string, Selector>;
-export type SelectorsMap = Map<Address, PropertyABIMap>;
-export type MethodMap = Map<Address, ContractABIMap>;
+import {
+    ABIRegistryItem,
+    Address,
+    ADDRESS_BYTE_LENGTH,
+    ContractABIMap,
+    f32,
+    i32,
+    MethodMap,
+    PointerStorage,
+    PropertyABIMap,
+    Selector,
+    SelectorsMap,
+    u16,
+    u32,
+    u8,
+} from './types/math';
 
 export class BinaryReader {
     private buffer: DataView;
@@ -124,6 +120,58 @@ export class BinaryReader {
         const high = BigInt(this.readU32());
 
         return (BigInt(high) << 32n) | low;
+    }
+
+    public readStorage(): Map<Address, PointerStorage> {
+        const contractsSize: u32 = this.readU32();
+        const storage: Map<Address, PointerStorage> = new Map();
+
+        for (let i: u32 = 0; i < contractsSize; i++) {
+            const address: Address = this.readAddress();
+            const storageSize: u32 = this.readU32();
+
+            const subPointerStorage: Map<bigint, bigint> = new Map();
+
+            for (let j: u32 = 0; j < storageSize; j++) {
+                const keyPointer: bigint = this.readU256();
+                const value: bigint = this.readU256();
+
+                subPointerStorage.set(keyPointer, value);
+            }
+
+            storage.set(address, subPointerStorage);
+        }
+
+        return storage;
+    }
+
+    public readRequestedStorage(): Map<Address, Set<bigint>> {
+        const storage: Map<Address, Set<bigint>> = new Map();
+        const size: u32 = this.readU32();
+
+        for (let i: u32 = 0; i < size; i++) {
+            const address: Address = this.readAddress();
+            const length: u32 = this.readU32();
+
+            const pointers: Set<bigint> = new Set();
+            for (let j: u32 = 0; j < length; j++) {
+                const keyPointer: bigint = this.readU256();
+
+                pointers.add(keyPointer);
+            }
+
+            storage.set(address, pointers);
+        }
+
+        return storage;
+    }
+
+    public readU256(): bigint {
+        const next32Bytes = this.readBytes(32);
+
+        return BigInt(
+            '0x' + next32Bytes.reduce((acc, byte) => acc + byte.toString(16).padStart(2, '0'), ''),
+        );
     }
 
     public readBytes(length: u32, zeroStop: boolean = false): Uint8Array {

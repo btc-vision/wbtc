@@ -3,8 +3,9 @@ import 'jest';
 // @ts-ignore
 import * as wasm from '../config/runDebug.js';
 import { MotoSwapFactory } from '../contracts/MotoSwapFactory';
-import { BinaryReader, ContractABIMap, MethodMap, PropertyABIMap, SelectorsMap } from '../helper/buffer/BinaryReader';
+import { ContractABIMap, MethodMap, PropertyABIMap, SelectorsMap } from '../helper/buffer/types/math';
 import { ABICoder, ABIDataTypes } from '../helper/abi/ABICoder';
+import { BinaryReader } from '../helper/buffer/BinaryReader';
 
 describe('I should be able to create my own smart contract for Bitcoin.', () => {
     const OWNER = 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq';
@@ -28,7 +29,7 @@ describe('I should be able to create my own smart contract for Bitcoin.', () => 
             throw new Error('Module not found');
         }
 
-        module = moduleWasm.CONTRACT(OWNER, CONTRACT_ADDRESS);
+        module = moduleWasm.INIT(OWNER, CONTRACT_ADDRESS);
 
         const abi: Uint8Array = moduleWasm.getViewABI();
         const abiDecoder = new BinaryReader(abi);

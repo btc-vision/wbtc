@@ -2,6 +2,7 @@
 import { bytes32, bytes4 } from './bytes';
 import { Sha256 } from './sha256';
 import { MemorySlotPointer } from '../memory/MemorySlotPointer';
+import { u256 } from 'as-bignum/assembly';
 
 export type Selector = u32;
 
@@ -17,4 +18,20 @@ export function encodePointer(str: string): MemorySlotPointer {
     const hash = Sha256.hash(typed);
 
     return bytes32(hash);
+}
+
+export function encodePointerHash(pointer: u16, sub: u256): u256 {
+    const finalBuffer: Uint8Array = new Uint8Array(36);
+    const mergedKey: Uint8Array = u256.fromU32(pointer).toUint8Array();
+
+    for (let i: i32 = 0; i < mergedKey.length; i++) {
+        finalBuffer[i] = mergedKey[i];
+    }
+
+    const subKey = sub.toUint8Array();
+    for (let i: i32 = 0; i < subKey.length; i++) {
+        finalBuffer[4 + i] = subKey[i];
+    }
+
+    return bytes32(Sha256.hash(mergedKey));
 }
