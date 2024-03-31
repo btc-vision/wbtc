@@ -22,12 +22,12 @@ async function instantiate(module, imports = {}) {
     const { exports } = await WebAssembly.instantiate(module, adaptedImports);
     const memory = exports.memory || imports.env.memory;
     const adaptedExports = Object.setPrototypeOf({
-        CONTRACT(owner, self) {
+        INIT(owner, self) {
             // src/index/CONTRACT(~lib/string/String, ~lib/string/String) => contracts/MotoSwapFactory/MotoSwapFactory
             owner = __retain(__lowerString(owner) || __notnull());
             self = __lowerString(self) || __notnull();
             try {
-                return __liftInternref(exports.CONTRACT(owner, self) >>> 0);
+                return __liftInternref(exports.INIT(owner, self) >>> 0);
             } finally {
                 __release(owner);
             }

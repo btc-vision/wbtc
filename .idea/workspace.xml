@@ -5,14 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="416d6194-4e78-4683-bece-f002bbf19e08" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/helper/abi/ABICoder.ts" beforeDir="false" afterPath="$PROJECT_DIR$/helper/abi/ABICoder.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/helper/abi/BinaryReader.ts" beforeDir="false" afterPath="$PROJECT_DIR$/helper/buffer/BinaryReader.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/helper/buffer/memory/MemoryWriter.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/helper/buffer/memory/PointerWriter.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/buffer/BytesReader.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/buffer/BytesReader.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/buffer/memory/MemoryReader.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/buffer/memory/pointer/PointerReader.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/runDebug.js" beforeDir="false" afterPath="$PROJECT_DIR$/config/runDebug.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/btc/contracts/BTCContract.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/contracts/BTCContract.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/CreateBTCSmartContract.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tests/CreateBTCSmartContract.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,7 +49,7 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "dev",
+    "git-widget-placeholder": "runtime",
     "last_opened_file_path": "C:/Users/felix/Desktop/btc/BtcSmartContract",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -86,7 +84,7 @@
       <option name="presentableId" value="Default" />
       <updated>1711602910264</updated>
       <workItem from="1711602911275" duration="58652000" />
-      <workItem from="1711838939299" duration="613000" />
+      <workItem from="1711838939299" duration="3734000" />
     </task>
     <servers />
   </component>

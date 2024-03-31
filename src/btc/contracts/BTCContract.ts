@@ -12,8 +12,8 @@ export abstract class BTCContract implements IBTC {
     private readonly _owner: string;
     private readonly _address: string;
 
-    protected constructor(self: Address, owner: Address) {
-        if (!self) {
+    protected constructor(contractAddress: Address, owner: Address) {
+        if (!contractAddress) {
             throw new Revert('CONTRACT DOESNT NOT KNOW ITS OWN ADDRESS.');
         }
 
@@ -21,14 +21,14 @@ export abstract class BTCContract implements IBTC {
             throw new Revert('NO CONTRACT INITIALIZER FOUND.');
         }
 
-        if (Blockchain.hasContract(self)) {
+        if (Blockchain.hasContract(contractAddress)) {
             throw new Revert('CONTRACT ALREADY EXISTS.');
         }
 
         //memory.grow(1); // 64k allocate memory for the contract
 
         this._owner = owner;
-        this._address = self;
+        this._address = contractAddress;
 
         if (!this._owner) {
             throw new Revert('Owner is required');
@@ -62,7 +62,7 @@ export abstract class BTCContract implements IBTC {
 
     public callView(method: Selector): BytesWriter {
         switch (method) {
-            case encodeSelector('self'):
+            case encodeSelector('address'):
                 this.response.writeAddress(this.address);
                 break;
             case encodeSelector('owner'):
@@ -106,7 +106,7 @@ export abstract class BTCContract implements IBTC {
     };
 
     private defineProtectedSelectors(): void {
-        this.defineGetterSelector('self');
+        this.defineGetterSelector('address');
         this.defineGetterSelector('owner');
         this.defineMethodSelector('isAddressOwner');
 

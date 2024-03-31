@@ -28,7 +28,7 @@ describe('I should be able to create my own smart contract for Bitcoin.', () => 
             throw new Error('Module not found');
         }
 
-        module = moduleWasm.CONTRACT(OWNER, CONTRACT_ADDRESS);
+        module = moduleWasm.INIT(OWNER, CONTRACT_ADDRESS);
 
         const abi: Uint8Array = moduleWasm.getViewABI();
         const abiDecoder = new BinaryReader(abi);
