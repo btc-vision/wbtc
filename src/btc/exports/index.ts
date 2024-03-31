@@ -44,3 +44,15 @@ export function getMethodABI(): Uint8Array {
 
     return Blockchain.getMethodSelectors();
 }
+
+export function getRequiredStorage(): Uint8Array {
+    Blockchain.requireInitialization();
+
+    return Blockchain.writeRequiredStorage();
+}
+
+export function getModifiedStorage(): Uint8Array {
+    Blockchain.requireInitialization();
+
+    return Blockchain.storageToBytes();
+}
