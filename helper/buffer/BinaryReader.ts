@@ -147,7 +147,7 @@ export class BinaryReader {
 
     public readRequestedStorage(): Map<Address, bigint> {
         const storage: Map<Address, bigint> = new Map();
-        const size: u32 = this.readU16();
+        const size: u32 = this.readU32();
 
         for (let i: u32 = 0; i < size; i++) {
             const address: Address = this.readAddress();
@@ -162,7 +162,9 @@ export class BinaryReader {
     public readU256(): bigint {
         const next32Bytes = this.readBytes(32);
 
-        return BigInt('0x' + next32Bytes.reduce((acc, byte) => acc + byte.toString(16).padStart(2, '0'), ''));
+        return BigInt(
+            '0x' + next32Bytes.reduce((acc, byte) => acc + byte.toString(16).padStart(2, '0'), ''),
+        );
     }
 
     public readBytes(length: u32, zeroStop: boolean = false): Uint8Array {

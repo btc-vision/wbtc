@@ -143,22 +143,21 @@ export class BlockchainEnvironment {
         this.storage.clear();
 
         const memoryReader: BytesReader = new BytesReader(data);
-        const contractsSize: u32 = memoryReader.readU16();
+        const contractsSize: u32 = memoryReader.readU32();
 
         for (let i: u32 = 0; i < contractsSize; i++) {
             const address: Address = memoryReader.readAddress();
             const storageSize: u32 = memoryReader.readU32();
 
+            this.ensureStorageAtAddress(address);
+            const storage: PointerStorage = this.storage.get(address);
+
             for (let j: u32 = 0; j < storageSize; j++) {
-                const pointer: u16 = memoryReader.readU16();
-                const subPointerSize: u32 = memoryReader.readU32();
+                const keyPointer: MemorySlotPointer = memoryReader.readU256();
+                const value: MemorySlotData<u256> = memoryReader.readU256();
 
-                for (let k: u32 = 0; k < subPointerSize; k++) {
-                    const keyPointer: MemorySlotPointer = memoryReader.readU256();
-                    const value: u256 = memoryReader.readU256();
-
-                    this.setStorageAt(address, pointer, keyPointer, value);
-                }
+                this.ensureStorageAtPointer(storage, keyPointer);
+                storage.set(keyPointer, value);
             }
         }
     }
