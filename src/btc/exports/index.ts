@@ -20,6 +20,10 @@ export function readMethod(method: Selector, contract: BTCContract | null, data:
     return result.getBuffer();
 }
 
+export function INIT(owner: Address, contractAddress: Address): void {
+    Blockchain.init(owner, contractAddress);
+}
+
 export function readView(method: Selector, contract: BTCContract | null): Uint8Array {
     Blockchain.requireInitialization();
 
@@ -55,4 +59,12 @@ export function getModifiedStorage(): Uint8Array {
     Blockchain.requireInitialization();
 
     return Blockchain.storageToBytes();
+}
+
+export function loadStorage(data: Uint8Array): void {
+    Blockchain.loadStorage(data);
+}
+
+export function purgeMemory(): void {
+    Blockchain.purgeMemory();
 }

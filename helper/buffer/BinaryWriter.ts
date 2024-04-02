@@ -1,8 +1,10 @@
 import {
     Address,
     ADDRESS_BYTE_LENGTH,
+    BlockchainStorage,
     i32,
     MethodMap,
+    PointerStorage,
     PropertyABIMap,
     Selector,
     SelectorsMap,
@@ -119,6 +121,41 @@ export class BinaryWriter {
         this.clear();
 
         return buf;
+    }
+
+    public reset(): void {
+        this.currentOffset = 0;
+
+        this.buffer = new DataView(new ArrayBuffer(4));
+    }
+
+    public writeStorage(storage: BlockchainStorage): void {
+        this.reset();
+        this.writeU32(storage.size);
+
+        const keys: Address[] = Array.from(storage.keys());
+        const values: PointerStorage[] = Array.from(storage.values());
+
+        for (let i: i32 = 0; i < keys.length; i++) {
+            const address: Address = keys[i];
+            const slots: Map<u64, u64> = values[i];
+
+            this.writeAddress(address);
+            this.writeU32(slots.size);
+
+            const slotKeys: u64[] = Array.from(slots.keys());
+            for (let j: i32 = 0; j < slotKeys.length; j++) {
+                const slot: u64 = slotKeys[j];
+                this.writeU256(slot);
+
+                const slotValue = slots.get(slot);
+                if (slotValue === undefined || slotValue === null) {
+                    throw new Error(`Slot value not found.`);
+                }
+
+                this.writeU256(slotValue);
+            }
+        }
     }
 
     public toBytesReader(): BinaryReader {

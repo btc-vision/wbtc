@@ -27,7 +27,7 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
         this.allowanceMap = new MultiAddressMemoryMap<Address, Address, MemorySlotData<u256>>(0, self);
         this.balanceOfMap = new AddressMemoryMap<Address, MemorySlotData<u256>>(1, self);
 
-        this._totalSupply = Blockchain.getStorageAt(self, 2, u256.Zero);
+        this._totalSupply = Blockchain.getStorageAt(self, 2, u256.Zero, u256.Zero);
     }
 
     public _totalSupply: MemorySlotData<u256>;
