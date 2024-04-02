@@ -73,8 +73,8 @@ export class BlockchainEnvironment {
 
         const storage = this.storage.get(address);
         const pointerHash = encodePointerHash(pointer, subPointer);
-        this.ensureStorageAtPointer(address, pointerHash, defaultValue);
 
+        this.ensureStorageAtPointer(address, pointerHash, defaultValue);
         this.requireStorage(address, pointerHash);
 
         return storage.get(pointerHash);
@@ -94,7 +94,6 @@ export class BlockchainEnvironment {
     public setStorageAt(address: Address, pointer: u16, keyPointer: MemorySlotPointer, value: MemorySlotData<u256>): void {
         this.ensureStorageAtAddress(address);
 
-        const storage = this.storage.get(address);
         const pointerHash = encodePointerHash(pointer, keyPointer);
 
         this._internalSetStorageAt(address, pointerHash, value);
