@@ -73,9 +73,9 @@ export class BytesWriter {
     }
 
     public writeU256(value: u256): void {
-        const bytes = value.toUint8Array();
-        for (let i = 0; i < 32; i++) {
-            this.writeU8(bytes[i]);
+        const bytes = value.toUint8Array(true);
+        for (let i: i32 = 0; i < 32; i++) {
+            this.writeU8(bytes[i] || 0);
         }
     }
 

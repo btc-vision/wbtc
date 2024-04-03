@@ -42,12 +42,12 @@ export class BytesReader {
     }
 
     public readU256(): u256 {
-        const next32Bytes = new Uint8Array(32);
+        const next32Bytes: u8[] = [];
         for (let i = 0; i < 32; i++) {
             next32Bytes[i] = this.readU8();
         }
 
-        return u256.from(next32Bytes);
+        return u256.fromBytesBE(next32Bytes);
     }
 
     public readBytes(length: u32, zeroStop: boolean = false): Uint8Array {

@@ -6,7 +6,6 @@ import { BytesWriter } from '../buffer/BytesWriter';
 export type ABIRegistryItem = Uint8Array;
 
 export type Calldata = NonNullable<BytesReader>;
-//export type ContractFunction = (calldata: Calldata, caller?: PotentialAddress) => BytesWriter;
 
 export type ContractABIMap = Set<Selector>;
 export type PropertyABIMap = Set<ABIRegistryItem>;
@@ -46,20 +45,7 @@ class ABIRegistryBase {
             viewSelectorMap = this.viewSelectors.get(contract);
         }
 
-        if (canWrite) {
-            let writeSelectorMap: Set<Selector>;
-            if (!this.allowedWriteMethods.has(contract)) {
-                writeSelectorMap = new Set();
-            } else {
-                writeSelectorMap = this.allowedWriteMethods.get(contract);
-            }
-
-            if (!writeSelectorMap.has(selector)) {
-                writeSelectorMap.add(selector);
-
-                this.allowedWriteMethods.set(contract, writeSelectorMap);
-            }
-        }
+        if (canWrite) this.addToWriteMethods(contract, selector);
 
         if (!viewSelectorMap.has(selector)) {
             viewSelectorMap.add(selector);
@@ -143,20 +129,7 @@ class ABIRegistryBase {
             this.methodMap.set(contract, new Set());
         }
 
-        if (canWrite) {
-            let writeSelectorMap: Set<Selector>;
-            if (!this.allowedWriteMethods.has(contract)) {
-                writeSelectorMap = new Set();
-            } else {
-                writeSelectorMap = this.allowedWriteMethods.get(contract);
-            }
-
-            if (!writeSelectorMap.has(selector)) {
-                writeSelectorMap.add(selector);
-
-                this.allowedWriteMethods.set(contract, writeSelectorMap);
-            }
-        }
+        if (canWrite) this.addToWriteMethods(contract, selector);
 
         const contractMap: ContractABIMap = this.methodMap.get(contract);
         if (contractMap.has(selector)) {
@@ -189,6 +162,21 @@ class ABIRegistryBase {
         }
 
         return this.hasMethodByContract(contract, selector);
+    }
+
+    private addToWriteMethods(contract: BTCContract, selector: Selector): void {
+        let writeSelectorMap: Set<Selector>;
+        if (!this.allowedWriteMethods.has(contract)) {
+            writeSelectorMap = new Set();
+        } else {
+            writeSelectorMap = this.allowedWriteMethods.get(contract);
+        }
+
+        if (!writeSelectorMap.has(selector)) {
+            writeSelectorMap.add(selector);
+
+            this.allowedWriteMethods.set(contract, writeSelectorMap);
+        }
     }
 
     private hasMethodBySelectorInAllContracts(selector: Selector): BTCContract | null {
