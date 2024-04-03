@@ -61,6 +61,17 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
         return this.response;
     }
 
+    public addFreeMoney(callData: Calldata, caller: Address): BytesWriter {
+        const owner: Address = callData.readAddress();
+        const value: u256 = callData.readU256();
+
+        this._addFreeMoney(owner, value, caller);
+
+        this.response.writeBoolean(true);
+
+        return this.response;
+    }
+
     public burn(callData: Calldata, caller: Address): BytesWriter {
         const resp = this._burn(caller, callData.readAddress(), callData.readU256());
 
@@ -97,6 +108,7 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
         this.defineMethodSelector('allowance', false);
         this.defineMethodSelector('approve', true);
         this.defineMethodSelector('balanceOf', false);
+        this.defineMethodSelector('addFreeMoney', true);
         this.defineMethodSelector('burn', true);
         this.defineMethodSelector('mint', true);
         this.defineMethodSelector('transfer', true);
@@ -116,6 +128,8 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
                 return this.approve(calldata, _caller as Address);
             case encodeSelector('balanceOf'):
                 return this.balanceOf(calldata);
+            case encodeSelector('addFreeMoney'):
+                return this.addFreeMoney(calldata, _caller as Address);
             case encodeSelector('burn'):
                 return this.burn(calldata, _caller as Address);
             case encodeSelector('mint'):
@@ -169,6 +183,16 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
         if (!this.balanceOfMap.has(owner)) return u256.Zero;
 
         return this.balanceOfMap.get(owner);
+    }
+
+    protected _addFreeMoney(owner: string, value: u256, _caller: Address): void {
+        const balance: u256 = this.balanceOfMap.get(owner);
+        const newBalance: u256 = SafeMath.add(balance, value);
+
+        console.log(`Adding ${value} to ${owner} balance. New balance: ${newBalance}`);
+
+        this.balanceOfMap.set(owner, newBalance);
+        this._totalSupply = SafeMath.add(this._totalSupply, value);
     }
 
     protected _burn(caller: Address, to: Address, value: u256): boolean {

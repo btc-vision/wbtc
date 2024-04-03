@@ -55,7 +55,6 @@ export class BytesReader {
         for (let i: u32 = 0; i < length; i++) {
             const byte = this.readU8();
             if (zeroStop && byte == 0) {
-                bytes = bytes.slice(0, i);
                 continue;
             }
 
@@ -103,11 +102,11 @@ export class BytesReader {
         return this.readString(ADDRESS_BYTE_LENGTH);
     }
 
-    public getOffset(): u16 {
+    public getOffset(): i32 {
         return this.currentOffset;
     }
 
-    public setOffset(offset: u16): void {
+    public setOffset(offset: i32): void {
         this.currentOffset = offset;
     }
 
