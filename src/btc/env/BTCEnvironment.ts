@@ -15,12 +15,12 @@ export type BlockchainStorage = Map<Address, PointerStorage>;
 export type RequiredStorage = Map<Address, Set<MemorySlotPointer>>;
 
 export class BlockchainEnvironment {
+    public isInitialized: boolean = false;
+
     private requiredStorage: RequiredStorage = new Map();
     private storage: BlockchainStorage = new Map();
     private contracts: Map<Address, BTCContract> = new Map();
-
     private defaults: ContractDefaults = new ContractDefaults();
-    private isInitialized: boolean = false;
 
     constructor() {
     }
@@ -132,8 +132,31 @@ export class BlockchainEnvironment {
         return ABIRegistry.getMethodSelectors();
     }
 
+    public getWriteMethods(): Uint8Array {
+        return ABIRegistry.getWriteMethods();
+    }
+
+    public allocateMemory(num: usize): usize {
+        return __alloc(num);
+    }
+
+    public deallocateMemory(pointer: i32): void {
+        __free(pointer);
+    }
+
+    public growMemory(num: i32): i32 {
+        const hasGrown: i32 = memory.grow(num);
+
+        if (hasGrown < 0) {
+            throw new Error('Memory could not be grown');
+        }
+
+        return hasGrown;
+    }
+
     public loadStorage(data: Uint8Array): void {
         this.purgeMemory();
+        this.growMemory(1);
 
         const memoryReader: BytesReader = new BytesReader(data);
         const contractsSize: u32 = memoryReader.readU32();

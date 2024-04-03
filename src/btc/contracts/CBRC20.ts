@@ -94,18 +94,18 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
     }
 
     public defineSelectors(): void {
-        this.defineMethodSelector('allowance');
-        this.defineMethodSelector('approve');
-        this.defineMethodSelector('balanceOf');
-        this.defineMethodSelector('burn');
-        this.defineMethodSelector('mint');
-        this.defineMethodSelector('transfer');
-        this.defineMethodSelector('transferFrom');
+        this.defineMethodSelector('allowance', false);
+        this.defineMethodSelector('approve', true);
+        this.defineMethodSelector('balanceOf', false);
+        this.defineMethodSelector('burn', true);
+        this.defineMethodSelector('mint', true);
+        this.defineMethodSelector('transfer', true);
+        this.defineMethodSelector('transferFrom', true);
 
-        this.defineGetterSelector('decimals');
-        this.defineGetterSelector('name');
-        this.defineGetterSelector('symbol');
-        this.defineGetterSelector('totalSupply');
+        this.defineGetterSelector('decimals', false);
+        this.defineGetterSelector('name', false);
+        this.defineGetterSelector('symbol', false);
+        this.defineGetterSelector('totalSupply', false);
     }
 
     public callMethod(method: Selector, calldata: Calldata, _caller: PotentialAddress = null): BytesWriter {

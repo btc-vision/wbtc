@@ -9,6 +9,7 @@ export function getContract(): BTCContract {
     const contract = new Moto(defaults.selfAddress, defaults.ownerAddress);
 
     Blockchain.setContract(defaults.selfAddress, contract);
+    Blockchain.growMemory(1); // 64k allocate memory for the contract
 
     return contract;
 }
