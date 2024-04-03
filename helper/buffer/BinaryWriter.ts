@@ -14,6 +14,7 @@ import {
     u64,
     u8,
 } from './types/math.js';
+import { BufferHelper } from './BufferHelper';
 
 export class BinaryWriter {
     private currentOffset: u32 = 0;
@@ -53,10 +54,15 @@ export class BinaryWriter {
     }
 
     public writeU256(bigIntValue: bigint): void {
-        const byteArray = Buffer.from(bigIntValue.toString(16).padStart(64, '0'), 'hex');
+        const bytesToHex = BufferHelper.valueToUint8Array(bigIntValue);
+        if (bytesToHex.byteLength !== 32) {
+            console.log('Invalid u256 value:', bytesToHex);
 
-        for (let i = 0; i < 32; i++) {
-            this.writeU8(byteArray[i] || 0);
+            throw new Error(`Invalid u256 value: ${bigIntValue}`);
+        }
+
+        for (let i = 0; i < bytesToHex.byteLength; i++) {
+            this.writeU8(bytesToHex[i]);
         }
     }
 

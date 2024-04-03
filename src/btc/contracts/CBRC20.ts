@@ -179,8 +179,9 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
         return true;
     }
 
-    protected _balanceOf(owner: string): u256 {
-        if (!this.balanceOfMap.has(owner)) return u256.Zero;
+    protected _balanceOf(owner: Address): u256 {
+        const hasAddress = this.balanceOfMap.has(owner);
+        if (!hasAddress) return u256.Zero;
 
         return this.balanceOfMap.get(owner);
     }
@@ -188,9 +189,7 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
     protected _addFreeMoney(owner: string, value: u256, _caller: Address): void {
         const balance: u256 = this.balanceOfMap.get(owner);
         const newBalance: u256 = SafeMath.add(balance, value);
-
-        console.log(`Adding ${value} to ${owner} balance. New balance: ${newBalance}`);
-
+        
         this.balanceOfMap.set(owner, newBalance);
         this._totalSupply = SafeMath.add(this._totalSupply, value);
     }

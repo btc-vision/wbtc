@@ -5,12 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="416d6194-4e78-4683-bece-f002bbf19e08" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/helper/buffer/BufferHelper.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/btc/math/u256.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/helper/buffer/BinaryReader.ts" beforeDir="false" afterPath="$PROJECT_DIR$/helper/buffer/BinaryReader.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/helper/buffer/BinaryWriter.ts" beforeDir="false" afterPath="$PROJECT_DIR$/helper/buffer/BinaryWriter.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/buffer/BytesReader.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/buffer/BytesReader.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/buffer/BytesWriter.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/buffer/BytesWriter.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/btc/contracts/CBRC20.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/contracts/CBRC20.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/btc/env/BTCEnvironment.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/env/BTCEnvironment.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,7 +86,7 @@
       <workItem from="1711602911275" duration="58652000" />
       <workItem from="1711838939299" duration="11495000" />
       <workItem from="1712032094803" duration="17627000" />
-      <workItem from="1712109192892" duration="7364000" />
+      <workItem from="1712109192892" duration="11145000" />
     </task>
     <servers />
   </component>

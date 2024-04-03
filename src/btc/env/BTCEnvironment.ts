@@ -77,18 +77,37 @@ export class BlockchainEnvironment {
         this.ensureStorageAtPointer(address, pointerHash, defaultValue);
         this.requireStorage(address, pointerHash);
 
-        return storage.get(pointerHash);
+        const allKeys: u256[] = storage.keys();
+        for (let i: i32 = 0; i < allKeys.length; i++) {
+            const v: u256 = allKeys[i];
+
+            if (v == pointerHash) {
+                return storage.get(v);
+            }
+        }
+
+        return defaultValue;
     }
 
     public hasStorageAt(address: Address, pointer: u16, subPointer: MemorySlotPointer): bool {
         this.ensureStorageAtAddress(address);
 
-        const storage = this.storage.get(address);
-        const pointerHash = encodePointerHash(pointer, subPointer);
+        const storage: PointerStorage = this.storage.get(address);
+        const pointerHash: u256 = encodePointerHash(pointer, subPointer);
 
         this.requireStorage(address, pointerHash);
 
-        return storage.has(pointerHash);
+        // dumb.
+        const allKeys: u256[] = storage.keys();
+        for (let i: i32 = 0; i < allKeys.length; i++) {
+            const v: u256 = allKeys[i];
+
+            if (v == pointerHash) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public setStorageAt(address: Address, pointer: u16, keyPointer: MemorySlotPointer, value: MemorySlotData<u256>): void {
