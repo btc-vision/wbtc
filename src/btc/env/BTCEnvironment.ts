@@ -165,8 +165,6 @@ export class BlockchainEnvironment {
             const address: Address = memoryReader.readAddress();
             const storageSize: u32 = memoryReader.readU32();
 
-            console.log(`Loading storage for contract at address ${address.toString()}. Storage size: ${storageSize}`);
-
             this.ensureStorageAtAddress(address);
             const storage: PointerStorage = this.storage.get(address);
 
@@ -174,13 +172,9 @@ export class BlockchainEnvironment {
                 const keyPointer: MemorySlotPointer = memoryReader.readU256();
                 const value: MemorySlotData<u256> = memoryReader.readU256();
 
-                console.log(`Setting storage at pointer ${keyPointer.toString()} with value ${value.toString()}.`);
-
                 storage.set(keyPointer, value);
             }
         }
-
-        console.log(`Loaded storage with ${this.storage.size} contracts.`);
     }
 
     public storageToBytes(): Uint8Array {
