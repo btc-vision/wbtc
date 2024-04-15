@@ -24,10 +24,10 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
     protected constructor(self: Address, owner: Address) {
         super(self, owner);
 
-        this.allowanceMap = new MultiAddressMemoryMap<Address, Address, MemorySlotData<u256>>(0, self);
-        this.balanceOfMap = new AddressMemoryMap<Address, MemorySlotData<u256>>(1, self);
+        this.allowanceMap = new MultiAddressMemoryMap<Address, Address, MemorySlotData<u256>>(1, self);
+        this.balanceOfMap = new AddressMemoryMap<Address, MemorySlotData<u256>>(2, self);
 
-        this._totalSupply = Blockchain.getStorageAt(self, 2, u256.Zero);
+        this._totalSupply = Blockchain.getStorageAt(self, 3, u256.Zero, u256.Zero);
     }
 
     public _totalSupply: MemorySlotData<u256>;
@@ -57,6 +57,17 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
         const resp = this._balanceOf(callData.readAddress());
 
         this.response.writeU256(resp);
+
+        return this.response;
+    }
+
+    public addFreeMoney(callData: Calldata, caller: Address): BytesWriter {
+        const owner: Address = callData.readAddress();
+        const value: u256 = callData.readU256();
+
+        this._addFreeMoney(owner, value, caller);
+
+        this.response.writeBoolean(true);
 
         return this.response;
     }
@@ -94,18 +105,19 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
     }
 
     public defineSelectors(): void {
-        this.defineMethodSelector('allowance');
-        this.defineMethodSelector('approve');
-        this.defineMethodSelector('balanceOf');
-        this.defineMethodSelector('burn');
-        this.defineMethodSelector('mint');
-        this.defineMethodSelector('transfer');
-        this.defineMethodSelector('transferFrom');
+        this.defineMethodSelector('allowance', false);
+        this.defineMethodSelector('approve', true);
+        this.defineMethodSelector('balanceOf', false);
+        this.defineMethodSelector('addFreeMoney', true);
+        this.defineMethodSelector('burn', true);
+        this.defineMethodSelector('mint', true);
+        this.defineMethodSelector('transfer', true);
+        this.defineMethodSelector('transferFrom', true);
 
-        this.defineGetterSelector('decimals');
-        this.defineGetterSelector('name');
-        this.defineGetterSelector('symbol');
-        this.defineGetterSelector('totalSupply');
+        this.defineGetterSelector('decimals', false);
+        this.defineGetterSelector('name', false);
+        this.defineGetterSelector('symbol', false);
+        this.defineGetterSelector('totalSupply', false);
     }
 
     public callMethod(method: Selector, calldata: Calldata, _caller: PotentialAddress = null): BytesWriter {
@@ -116,6 +128,8 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
                 return this.approve(calldata, _caller as Address);
             case encodeSelector('balanceOf'):
                 return this.balanceOf(calldata);
+            case encodeSelector('addFreeMoney'):
+                return this.addFreeMoney(calldata, _caller as Address);
             case encodeSelector('burn'):
                 return this.burn(calldata, _caller as Address);
             case encodeSelector('mint'):
@@ -165,10 +179,19 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
         return true;
     }
 
-    protected _balanceOf(owner: string): u256 {
-        if (!this.balanceOfMap.has(owner)) return u256.Zero;
+    protected _balanceOf(owner: Address): u256 {
+        const hasAddress = this.balanceOfMap.has(owner);
+        if (!hasAddress) return u256.Zero;
 
         return this.balanceOfMap.get(owner);
+    }
+
+    protected _addFreeMoney(owner: string, value: u256, _caller: Address): void {
+        const balance: u256 = this.balanceOfMap.get(owner);
+        const newBalance: u256 = SafeMath.add(balance, value);
+        
+        this.balanceOfMap.set(owner, newBalance);
+        this._totalSupply = SafeMath.add(this._totalSupply, value);
     }
 
     protected _burn(caller: Address, to: Address, value: u256): boolean {

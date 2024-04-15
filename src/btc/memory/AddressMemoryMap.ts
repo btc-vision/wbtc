@@ -25,7 +25,7 @@ export class AddressMemoryMap<K extends string, V extends MemorySlotData<u256>> 
     }
 
     public get(key: K): MemorySlotData<u256> {
-        return Blockchain.getStorageAt(this.memoryAllocatorAddress, this.pointer, encodePointer(key));
+        return Blockchain.getStorageAt(this.memoryAllocatorAddress, this.pointer, encodePointer(key), u256.Zero);
     }
 
     public has(key: K): bool {

@@ -30,7 +30,7 @@ export class KeyMerger<K extends string, K2 extends string, V extends MemorySlot
     public get(key: K): MemorySlotData<u256> {
         const mergedKey: string = `${this.parentKey}${key}`;
 
-        return Blockchain.getStorageAt(this.memoryAllocatorAddress, this.pointer, encodePointer(mergedKey));
+        return Blockchain.getStorageAt(this.memoryAllocatorAddress, this.pointer, encodePointer(mergedKey), u256.Zero);
     }
 
     public has(key: K): bool {

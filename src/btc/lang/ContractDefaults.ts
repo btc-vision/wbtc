@@ -11,7 +11,6 @@ export class ContractDefaults {
     constructor() {
     }
 
-
     get selfAddress(): Address {
         if (!this.contractAddress) throw new Error('Self address not found');
 
