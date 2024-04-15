@@ -10,8 +10,8 @@
         "asbuild": "npm run asbuild:debug && npm run asbuild:release",
         "start": "npx serve ."
     },
-    "author": "",
-    "license": "ISC",
+    "author": "BlobMaster41",
+    "license": "LICENSE.MD",
     "devDependencies": {
         "@jest/types": "^29.6.3",
         "@types/jest": "^29.5.12",
