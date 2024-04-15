@@ -42,12 +42,12 @@ export class BytesReader {
     }
 
     public readU256(): u256 {
-        const next32Bytes = new Uint8Array(32);
+        const next32Bytes: u8[] = [];
         for (let i = 0; i < 32; i++) {
             next32Bytes[i] = this.readU8();
         }
 
-        return u256.from(next32Bytes);
+        return u256.fromBytesBE(next32Bytes);
     }
 
     public readBytes(length: u32, zeroStop: boolean = false): Uint8Array {
@@ -55,7 +55,6 @@ export class BytesReader {
         for (let i: u32 = 0; i < length; i++) {
             const byte = this.readU8();
             if (zeroStop && byte == 0) {
-                bytes = bytes.slice(0, i);
                 continue;
             }
 
@@ -103,11 +102,11 @@ export class BytesReader {
         return this.readString(ADDRESS_BYTE_LENGTH);
     }
 
-    public getOffset(): u16 {
+    public getOffset(): i32 {
         return this.currentOffset;
     }
 
-    public setOffset(offset: u16): void {
+    public setOffset(offset: i32): void {
         this.currentOffset = offset;
     }
 

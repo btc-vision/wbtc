@@ -21,8 +21,11 @@ export function encodePointer(str: string): MemorySlotPointer {
 }
 
 export function encodePointerHash(pointer: u16, sub: u256): u256 {
-    const finalBuffer: Uint8Array = new Uint8Array(36);
-    const mergedKey: Uint8Array = u256.fromU32(pointer).toUint8Array();
+    const finalBuffer: Uint8Array = new Uint8Array(34);
+    const mergedKey: u8[] = [
+        u8(pointer & u16(0xFF)),
+        u8((pointer >> u16(8)) & u16(0xFF)),
+    ];
 
     for (let i: i32 = 0; i < mergedKey.length; i++) {
         finalBuffer[i] = mergedKey[i];
@@ -30,8 +33,8 @@ export function encodePointerHash(pointer: u16, sub: u256): u256 {
 
     const subKey = sub.toUint8Array();
     for (let i: i32 = 0; i < subKey.length; i++) {
-        finalBuffer[4 + i] = subKey[i];
+        finalBuffer[mergedKey.length + i] = subKey[i];
     }
 
-    return bytes32(Sha256.hash(mergedKey));
+    return bytes32(Sha256.hash(finalBuffer));
 }

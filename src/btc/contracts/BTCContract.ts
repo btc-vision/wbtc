@@ -75,8 +75,8 @@ export abstract class BTCContract implements IBTC {
         return this.response;
     }
 
-    protected defineGetterSelector(name: string): void {
-        ABIRegistry.defineGetterSelector(this, name);
+    protected defineGetterSelector(name: string, canWrite: boolean): void {
+        ABIRegistry.defineGetterSelector(this, name, canWrite);
     }
 
     protected isSelf(address: Address): boolean {
@@ -89,8 +89,8 @@ export abstract class BTCContract implements IBTC {
         }
     }
 
-    protected defineMethodSelector(name: string): void {
-        ABIRegistry.defineMethodSelector(this, name);
+    protected defineMethodSelector(name: string, canWrite: boolean): void {
+        ABIRegistry.defineMethodSelector(this, name, canWrite);
     }
 
     protected call(contract: Address, method: Selector, calldata: Calldata): void {
@@ -106,9 +106,9 @@ export abstract class BTCContract implements IBTC {
     };
 
     private defineProtectedSelectors(): void {
-        this.defineGetterSelector('address');
-        this.defineGetterSelector('owner');
-        this.defineMethodSelector('isAddressOwner');
+        this.defineGetterSelector('address', false);
+        this.defineGetterSelector('owner', false);
+        this.defineMethodSelector('isAddressOwner', false);
 
         this.defineSelectors();
     }

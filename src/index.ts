@@ -1,13 +1,15 @@
 import { Blockchain } from './btc/env';
-import { Address } from './btc/types/Address';
 import { BTCContract } from './btc/contracts/BTCContract';
 import { Moto } from '../contracts/Moto';
 
-export function INIT(owner: Address, self: Address): BTCContract {
-    const blockchainData = Blockchain.init(owner, self);
+export function getContract(): BTCContract {
+    Blockchain.requireInitialization();
 
-    const contract = new Moto(blockchainData.selfAddress, blockchainData.ownerAddress);
-    Blockchain.setContract(blockchainData.selfAddress, contract);
+    const defaults = Blockchain.getDefaults();
+    const contract = new Moto(defaults.selfAddress, defaults.ownerAddress);
+
+    Blockchain.setContract(defaults.selfAddress, contract);
+    Blockchain.growMemory(1); // 64k allocate memory for the contract
 
     return contract;
 }

@@ -3,6 +3,9 @@ import { Address, ADDRESS_BYTE_LENGTH } from '../types/Address';
 import { Selector } from '../math/abi';
 import { BytesReader } from './BytesReader';
 import { MethodMap, PropertyABIMap, SelectorsMap } from '../universal/ABIRegistry';
+import { MemorySlotPointer } from '../memory/MemorySlotPointer';
+import { MemorySlotData } from '../memory/MemorySlot';
+import { BlockchainStorage, PointerStorage } from '../env/BTCEnvironment';
 
 export class BytesWriter {
     private currentOffset: u32 = 0;
@@ -34,6 +37,33 @@ export class BytesWriter {
         this.writeU32(u32(value >> u64(32)));
     }
 
+    public writeStorage(storage: BlockchainStorage): void {
+        this.writeU32(storage.size);
+
+        const keys: Address[] = storage.keys();
+        const values: PointerStorage[] = storage.values();
+
+        for (let i: i32 = 0; i < keys.length; i++) {
+            const address: Address = keys[i];
+            const storage: PointerStorage = values[i];
+
+            this.writeAddress(address);
+
+            const subKeys: MemorySlotPointer[] = storage.keys();
+            const subValues: MemorySlotData<u256>[] = storage.values();
+
+            this.writeU32(subKeys.length);
+
+            for (let j: i32 = 0; j < subKeys.length; j++) {
+                const pointer: MemorySlotPointer = subKeys[j];
+                const value: MemorySlotData<u256> = subValues[j];
+
+                this.writeU256(pointer);
+                this.writeU256(value);
+            }
+        }
+    }
+
     public writeSelector(value: Selector): void {
         this.writeU32(value);
     }
@@ -43,9 +73,9 @@ export class BytesWriter {
     }
 
     public writeU256(value: u256): void {
-        const bytes = value.toUint8Array();
-        for (let i = 0; i < 32; i++) {
-            this.writeU8(bytes[i]);
+        const bytes = value.toUint8Array(true);
+        for (let i: i32 = 0; i < 32; i++) {
+            this.writeU8(bytes[i] || 0);
         }
     }
 
@@ -161,10 +191,18 @@ export class BytesWriter {
     }
 
     private fromAddress(value: Address): Uint8Array {
+        if (value.length > i32(ADDRESS_BYTE_LENGTH)) {
+            throw new Error('Address is too long');
+        }
+
         const bytes: Uint8Array = new Uint8Array(ADDRESS_BYTE_LENGTH);
 
         for (let i: i32 = 0; i < value.length; i++) {
             bytes[i] = value.charCodeAt(i);
+        }
+
+        for (let i: u8 = u8(value.length); i < ADDRESS_BYTE_LENGTH; i++) {
+            bytes[i] = 0;
         }
 
         return bytes;

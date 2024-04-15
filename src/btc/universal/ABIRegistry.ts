@@ -6,7 +6,6 @@ import { BytesWriter } from '../buffer/BytesWriter';
 export type ABIRegistryItem = Uint8Array;
 
 export type Calldata = NonNullable<BytesReader>;
-//export type ContractFunction = (calldata: Calldata, caller?: PotentialAddress) => BytesWriter;
 
 export type ContractABIMap = Set<Selector>;
 export type PropertyABIMap = Set<ABIRegistryItem>;
@@ -21,9 +20,10 @@ class ABIRegistryBase {
     private selectors: SelectorsMap = new Map();
 
     private viewSelectors: ViewSelectorsMap = new Map();
+    private allowedWriteMethods: ViewSelectorsMap = new Map();
 
     // Register properties with their selectors and handlers
-    public defineGetterSelector(contract: BTCContract, name: string): void {
+    public defineGetterSelector(contract: BTCContract, name: string, canWrite: boolean): void {
         const selector: Selector = encodeSelector(name);
 
         let contractMap: PropertyABIMap;
@@ -45,6 +45,8 @@ class ABIRegistryBase {
             viewSelectorMap = this.viewSelectors.get(contract);
         }
 
+        if (canWrite) this.addToWriteMethods(contract, selector);
+
         if (!viewSelectorMap.has(selector)) {
             viewSelectorMap.add(selector);
 
@@ -52,19 +54,6 @@ class ABIRegistryBase {
         }
 
         this.selectors.set(contract, contractMap);
-    }
-
-    public getSelectorsForContract(contract: BTCContract): ABIRegistryItem {
-        if (!this.selectors.has(contract)) {
-            throw new Error(`Contract not found.`);
-        }
-
-        const contractMap: PropertyABIMap = this.selectors.get(contract);
-        if (!contractMap) {
-            throw new Error(`Contract not found.`);
-        }
-
-        return contractMap.values()[0];
     }
 
     public hasSelectorForView(selector: Selector, contract: BTCContract | null = null): BTCContract | null {
@@ -125,13 +114,22 @@ class ABIRegistryBase {
         return writer.getBuffer();
     }
 
+    public getWriteMethods(): Uint8Array {
+        const writer: BytesWriter = new BytesWriter();
+        writer.writeMethodSelectorsMap(this.allowedWriteMethods);
+
+        return writer.getBuffer();
+    }
+
     // Register methods with their selectors and handlers
-    public defineMethodSelector(contract: BTCContract, name: string): void {
+    public defineMethodSelector(contract: BTCContract, name: string, canWrite: boolean): void {
         const selector: u32 = encodeSelector(name);
 
         if (!this.methodMap.has(contract)) {
             this.methodMap.set(contract, new Set());
         }
+
+        if (canWrite) this.addToWriteMethods(contract, selector);
 
         const contractMap: ContractABIMap = this.methodMap.get(contract);
         if (contractMap.has(selector)) {
@@ -166,10 +164,19 @@ class ABIRegistryBase {
         return this.hasMethodByContract(contract, selector);
     }
 
-    public hasMethodByName(name: string, contract: BTCContract | null): BTCContract | null {
-        const selector: Selector = encodeSelector(name);
+    private addToWriteMethods(contract: BTCContract, selector: Selector): void {
+        let writeSelectorMap: Set<Selector>;
+        if (!this.allowedWriteMethods.has(contract)) {
+            writeSelectorMap = new Set();
+        } else {
+            writeSelectorMap = this.allowedWriteMethods.get(contract);
+        }
 
-        return this.hasMethodBySelector(selector, contract);
+        if (!writeSelectorMap.has(selector)) {
+            writeSelectorMap.add(selector);
+
+            this.allowedWriteMethods.set(contract, writeSelectorMap);
+        }
     }
 
     private hasMethodBySelectorInAllContracts(selector: Selector): BTCContract | null {
