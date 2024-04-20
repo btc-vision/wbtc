@@ -6,7 +6,7 @@
     "scripts": {
         "test": "jest",
         "asbuild:debug": "asc src/index.ts --target debug --exportTable --measure",
-        "asbuild:release": "asc src/index.ts --target release",
+        "asbuild:release": "asc src/index.ts --target release --measure -O --noAssert --optimizeLevel 3 --shrinkLevel 2 --converge --runtime incremental",
         "asbuild": "npm run asbuild:debug && npm run asbuild:release",
         "start": "npx serve ."
     },

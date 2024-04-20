@@ -85,6 +85,14 @@ export class BytesWriter {
         }
     }
 
+    public writeBytesWithLength(value: Uint8Array): void {
+        this.writeU32(u32(value.length));
+
+        for (let i = 0; i < value.length; i++) {
+            this.writeU8(value[i]);
+        }
+    }
+
     public writeString(value: string): void {
         for (let i: i32 = 0; i < value.length; i++) {
             this.writeU8(u8(value.charCodeAt(i)));

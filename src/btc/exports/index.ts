@@ -2,11 +2,11 @@ import { ABIRegistry, Calldata } from '../universal/ABIRegistry';
 import { Blockchain } from '../env';
 import { Selector } from '../math/abi';
 import { BytesWriter } from '../buffer/BytesWriter';
-import { BTCContract } from '../contracts/BTCContract';
+import { OP_NET } from '../contracts/OP_NET';
 import { Address } from '../types/Address';
 import { BytesReader } from '../buffer/BytesReader';
 
-export function readMethod(method: Selector, contract: BTCContract | null, data: Uint8Array, caller: Address | null): Uint8Array {
+export function readMethod(method: Selector, contract: OP_NET | null, data: Uint8Array, caller: Address | null): Uint8Array {
     Blockchain.requireInitialization();
 
     const methodToCall = ABIRegistry.hasMethodBySelector(method, contract);
@@ -24,7 +24,7 @@ export function INIT(owner: Address, contractAddress: Address): void {
     Blockchain.init(owner, contractAddress);
 }
 
-export function readView(method: Selector, contract: BTCContract | null): Uint8Array {
+export function readView(method: Selector, contract: OP_NET | null): Uint8Array {
     Blockchain.requireInitialization();
 
     const methodToCall = ABIRegistry.hasSelectorForView(method, contract);
@@ -41,6 +41,12 @@ export function getViewABI(): Uint8Array {
     Blockchain.requireInitialization();
 
     return Blockchain.getViewSelectors();
+}
+
+export function getEvents(): Uint8Array {
+    Blockchain.requireInitialization();
+
+    return Blockchain.getEvents();
 }
 
 export function getMethodABI(): Uint8Array {

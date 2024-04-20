@@ -1,5 +1,5 @@
 import { Address } from '../types/Address';
-import { BTCContract } from '../contracts/BTCContract';
+import { OP_NET } from '../contracts/OP_NET';
 import { MemorySlotPointer } from '../memory/MemorySlotPointer';
 import { MemorySlotData } from '../memory/MemorySlot';
 import { u256 } from 'as-bignum/assembly';
@@ -8,6 +8,7 @@ import { ABIRegistry, Calldata } from '../universal/ABIRegistry';
 import { BytesReader } from '../buffer/BytesReader';
 import { encodePointerHash, Selector } from '../math/abi';
 import { BytesWriter } from '../buffer/BytesWriter';
+import { NetEvent } from '../events/NetEvent';
 
 export type PointerStorage = Map<MemorySlotPointer, MemorySlotData<u256>>;
 export type BlockchainStorage = Map<Address, PointerStorage>;
@@ -19,8 +20,10 @@ export class BlockchainEnvironment {
 
     private requiredStorage: RequiredStorage = new Map();
     private storage: BlockchainStorage = new Map();
-    private contracts: Map<Address, BTCContract> = new Map();
+    private contracts: Map<Address, OP_NET> = new Map();
     private defaults: ContractDefaults = new ContractDefaults();
+
+    private events: NetEvent[] = [];
 
     constructor() {
     }
@@ -34,6 +37,8 @@ export class BlockchainEnvironment {
     public purgeMemory(): void {
         this.storage.clear();
         this.requiredStorage.clear();
+
+        this.events = [];
     }
 
     public init(owner: Address, contractAddress: Address): void {
@@ -52,13 +57,13 @@ export class BlockchainEnvironment {
         return this.defaults;
     }
 
-    public call(self: BTCContract, destinationContract: Address, method: Selector, calldata: Calldata): BytesReader {
-        const contract: BTCContract = this.contracts.get(destinationContract);
+    public call(self: OP_NET, destinationContract: Address, method: Selector, calldata: Calldata): BytesReader {
+        const contract: OP_NET = this.contracts.get(destinationContract);
         if (!contract) {
             throw new Error(`Contract not found for address ${destinationContract}`);
         }
 
-        const methodToCall: BTCContract | null = ABIRegistry.hasMethodByContract(contract, method);
+        const methodToCall: OP_NET | null = ABIRegistry.hasMethodByContract(contract, method);
         if (!methodToCall) {
             throw new Error(`Method not found for selector ${method}`);
         }
@@ -87,6 +92,26 @@ export class BlockchainEnvironment {
         }
 
         return defaultValue;
+    }
+
+    public addEvent(event: NetEvent): void {
+        this.events.push(event);
+    }
+
+    public getEvents(): Uint8Array {
+        const buffer: BytesWriter = new BytesWriter();
+        buffer.writeU32(this.events.length);
+
+        for (let i: i32 = 0; i < this.events.length; i++) {
+            const event: NetEvent = this.events[i];
+
+            buffer.writeStringWithLength(event.eventType);
+            buffer.writeBytesWithLength(event.getEventData());
+        }
+
+        this.events = [];
+
+        return buffer.getBuffer();
     }
 
     public hasStorageAt(address: Address, pointer: u16, subPointer: MemorySlotPointer): bool {
@@ -118,7 +143,7 @@ export class BlockchainEnvironment {
         this._internalSetStorageAt(address, pointerHash, value);
     }
 
-    public setContract(address: Address, contract: BTCContract): void {
+    public setContract(address: Address, contract: OP_NET): void {
         this.contracts.set(address, contract);
     }
 
@@ -126,7 +151,7 @@ export class BlockchainEnvironment {
         return this.contracts.has(address);
     }
 
-    public getContract(address: Address): BTCContract {
+    public getContract(address: Address): OP_NET {
         if (!this.contracts.has(address)) throw new Error(`Contract not found for address ${address}`);
 
         return this.contracts.get(address);
