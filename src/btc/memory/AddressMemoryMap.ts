@@ -5,6 +5,7 @@ import { encodePointer } from '../math/abi';
 import { MemorySlotData } from './MemorySlot';
 import { u256 } from 'as-bignum/assembly';
 
+@final
 export class AddressMemoryMap<K extends string, V extends MemorySlotData<u256>> extends Map<K, MemorySlotData<u256>> {
     public pointer: u16;
 
