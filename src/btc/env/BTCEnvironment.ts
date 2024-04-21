@@ -15,11 +15,14 @@ export type BlockchainStorage = Map<Address, PointerStorage>;
 
 export type RequiredStorage = Map<Address, Set<MemorySlotPointer>>;
 
+@final
 export class BlockchainEnvironment {
     public isInitialized: boolean = false;
 
     private requiredStorage: RequiredStorage = new Map();
     private storage: BlockchainStorage = new Map();
+    private initializedStorage: BlockchainStorage = new Map();
+
     private contracts: Map<Address, OP_NET> = new Map();
     private defaults: ContractDefaults = new ContractDefaults();
 
@@ -36,6 +39,7 @@ export class BlockchainEnvironment {
 
     public purgeMemory(): void {
         this.storage.clear();
+        this.initializedStorage.clear();
         this.requiredStorage.clear();
 
         this.events = [];
@@ -76,12 +80,14 @@ export class BlockchainEnvironment {
     public getStorageAt(address: Address, pointer: u16, subPointer: MemorySlotPointer, defaultValue: MemorySlotData<u256>): MemorySlotData<u256> {
         this.ensureStorageAtAddress(address);
 
-        const storage = this.storage.get(address);
         const pointerHash = encodePointerHash(pointer, subPointer);
 
         this.ensureStorageAtPointer(address, pointerHash, defaultValue);
         this.requireStorage(address, pointerHash);
 
+        const storage: PointerStorage = this.storage.get(address);
+
+        // maybe find a better way for this
         const allKeys: u256[] = storage.keys();
         for (let i: i32 = 0; i < allKeys.length; i++) {
             const v: u256 = allKeys[i];
@@ -122,7 +128,7 @@ export class BlockchainEnvironment {
 
         this.requireStorage(address, pointerHash);
 
-        // dumb.
+        // maybe find a better way for this
         const allKeys: u256[] = storage.keys();
         for (let i: i32 = 0; i < allKeys.length; i++) {
             const v: u256 = allKeys[i];
@@ -168,6 +174,15 @@ export class BlockchainEnvironment {
         }
     }
 
+    public requireInitialStorage(address: Address, pointerHash: u256, defaultValue: u256): void {
+        if (!this.initializedStorage.has(address)) {
+            this.initializedStorage.set(address, new Map<u256, MemorySlotData<u256>>());
+        }
+
+        const storage = this.initializedStorage.get(address);
+        storage.set(pointerHash, defaultValue);
+    }
+
     public getViewSelectors(): Uint8Array {
         return ABIRegistry.getViewSelectors();
     }
@@ -200,7 +215,6 @@ export class BlockchainEnvironment {
 
     public loadStorage(data: Uint8Array): void {
         this.purgeMemory();
-        this.growMemory(1);
 
         const memoryReader: BytesReader = new BytesReader(data);
         const contractsSize: u32 = memoryReader.readU32();
@@ -219,6 +233,8 @@ export class BlockchainEnvironment {
                 storage.set(keyPointer, value);
             }
         }
+
+        memoryReader.purgeBuffer();
     }
 
     public storageToBytes(): Uint8Array {
@@ -227,6 +243,16 @@ export class BlockchainEnvironment {
         memoryWriter.writeStorage(this.storage);
 
         this.storage.clear();
+
+        return memoryWriter.getBuffer();
+    }
+
+    public initializedStorageToBytes(): Uint8Array {
+        const memoryWriter: BytesWriter = new BytesWriter();
+
+        memoryWriter.writeStorage(this.initializedStorage);
+
+        this.initializedStorage.clear();
 
         return memoryWriter.getBuffer();
     }
@@ -272,9 +298,13 @@ export class BlockchainEnvironment {
     }
 
     private ensureStorageAtPointer(address: Address, pointerHash: u256, defaultValue: MemorySlotData<u256>): void {
-        const storage = this.storage.get(address);
+        if (!this.storage.has(address)) {
+            throw new Error(`Storage slot not found for address ${address}`);
+        }
 
+        const storage = this.storage.get(address);
         if (!storage.has(pointerHash)) {
+            this.requireInitialStorage(address, pointerHash, defaultValue);
             this._internalSetStorageAt(address, pointerHash, defaultValue);
         }
     }

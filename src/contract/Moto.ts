@@ -5,8 +5,8 @@ import { BytesWriter } from '../btc/buffer/BytesWriter';
 import { u256 } from 'as-bignum/assembly';
 import { encodeSelector, Selector } from '../btc/math/abi';
 import { SafeMath } from '../btc/types/SafeMath';
-import { StoredU256 } from '../btc/storage/StoredU256';
 
+@final
 export class Moto extends OP_20 {
     public readonly decimals: u8 = 8;
 
@@ -48,6 +48,8 @@ export class Moto extends OP_20 {
         const newBalance: u256 = SafeMath.add(balance, value);
 
         this.balanceOfMap.set(owner, newBalance);
-        this._totalSupply = StoredU256.add(this._totalSupply, value);
+
+        // @ts-ignore
+        this._totalSupply += value;
     }
 }

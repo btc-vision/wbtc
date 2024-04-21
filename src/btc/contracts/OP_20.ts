@@ -56,7 +56,8 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
     }
 
     public balanceOf(callData: Calldata): BytesWriter {
-        const resp = this._balanceOf(callData.readAddress());
+        const address: Address = callData.readAddress();
+        const resp = this._balanceOf(address);
 
         this.response.writeU256(resp);
 
@@ -175,6 +176,8 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
     }
 
     protected _burn(caller: Address, to: Address, value: u256): boolean {
+        if (this._totalSupply.get() < value) throw new Revert('Insufficient total supply');
+
         if (!this.balanceOfMap.has(to)) throw new Revert();
 
         if (caller === to) {
@@ -189,10 +192,10 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
         if (balance < value) throw new Revert(`Insufficient balance`);
 
         const newBalance: u256 = SafeMath.sub(balance, value);
-
         this.balanceOfMap.set(to, newBalance);
 
-        this._totalSupply = StoredU256.sub(this._totalSupply, value);
+        // @ts-ignore
+        this._totalSupply -= value;
         return true;
     }
 
@@ -210,7 +213,8 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
             this.balanceOfMap.set(to, newToBalance);
         }
 
-        this._totalSupply = StoredU256.add(this._totalSupply, value);
+        // @ts-ignore
+        this._totalSupply += value;
         return true;
     }
 

@@ -5,6 +5,7 @@ import { Address } from '../types/Address';
 import { MemorySlotPointer } from './MemorySlotPointer';
 import { encodePointer } from '../math/abi';
 
+@final
 export class KeyMerger<K extends string, K2 extends string, V extends MemorySlotData<u256>> {
     public parentKey: K;
 

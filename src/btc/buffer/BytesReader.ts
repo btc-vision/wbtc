@@ -2,6 +2,7 @@ import { Address, ADDRESS_BYTE_LENGTH } from '../types/Address';
 import { Selector } from '../math/abi';
 import { u256 } from 'as-bignum/assembly';
 
+@final
 export class BytesReader {
     private readonly buffer: DataView;
 
@@ -9,6 +10,14 @@ export class BytesReader {
 
     constructor(bytes: Uint8Array) {
         this.buffer = new DataView(bytes.buffer);
+    }
+
+    public purgeBuffer(): void {
+        this.currentOffset = 0;
+
+        for (let i = 0; i < this.buffer.byteLength; i++) {
+            this.buffer.setUint8(i, 0);
+        }
     }
 
     public readU8(): u8 {
@@ -51,11 +60,16 @@ export class BytesReader {
     }
 
     public readBytes(length: u32, zeroStop: boolean = false): Uint8Array {
-        let bytes = new Uint8Array(length);
+        this.verifyEnd(this.currentOffset + length);
+
+        let bytes: Uint8Array = new Uint8Array(length);
         for (let i: u32 = 0; i < length; i++) {
-            const byte = this.readU8();
-            if (zeroStop && byte == 0) {
-                continue;
+            const byte: u8 = this.readU8();
+            if (zeroStop && byte === 0) {
+                bytes = bytes.slice(0, i);
+
+                this.currentOffset += length - (i + 1);
+                break;
             }
 
             bytes[i] = byte;
@@ -113,6 +127,21 @@ export class BytesReader {
     public verifyEnd(size: i32): void {
         if (this.currentOffset > this.buffer.byteLength) {
             throw new Error(`Expected to read ${size} bytes but read ${this.currentOffset} bytes`);
+        }
+    }
+
+    private verifyChecksum(): void {
+        const writtenChecksum = this.readU32();
+
+        let checksum: u32 = 0;
+        for (let i = 0; i < this.buffer.byteLength; i++) {
+            checksum += this.buffer.getUint8(i);
+        }
+
+        checksum = checksum % (2 ** 32);
+
+        if (checksum !== writtenChecksum) {
+            throw new Error('Invalid checksum for buffer');
         }
     }
 }

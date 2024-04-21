@@ -73,6 +73,12 @@ export function getModifiedStorage(): Uint8Array {
     return Blockchain.storageToBytes();
 }
 
+export function initializeStorage(): Uint8Array {
+    Blockchain.requireInitialization();
+
+    return Blockchain.initializedStorageToBytes();
+}
+
 export function loadStorage(data: Uint8Array): void {
     Blockchain.loadStorage(data);
 }
