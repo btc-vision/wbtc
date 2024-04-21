@@ -4,7 +4,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="416d6194-4e78-4683-bece-f002bbf19e08" name="Changes" comment="" />
+    <list default="true" id="416d6194-4e78-4683-bece-f002bbf19e08" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/MotoSwapFactory.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/MotoSwapFactory.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/btc/buffer/BytesReader.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/buffer/BytesReader.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/btc/buffer/BytesWriter.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/buffer/BytesWriter.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/btc/contracts/OP_20.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/contracts/OP_20.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/btc/env/BTCEnvironment.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/env/BTCEnvironment.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/btc/exports/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/exports/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/btc/memory/AddressMemoryMap.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/memory/AddressMemoryMap.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/btc/memory/KeyMerger.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/memory/KeyMerger.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/btc/memory/MultiAddressMemoryMap.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/memory/MultiAddressMemoryMap.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/btc/storage/StoredU256.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/storage/StoredU256.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contract/Moto.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/contract/Moto.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -42,8 +55,8 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "runtime",
-    "last_opened_file_path": "C:/Users/felix/Desktop/moto/BtcIndexer2",
+    "git-widget-placeholder": "chore/bug-fix-with-new-contract",
+    "last_opened_file_path": "C:/Users/felix/Desktop/moto/bsi-contract",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -61,11 +74,11 @@
       <recent name="C:\Users\felix\Desktop\moto\MotoSwapFactory\contracts" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\felix\Desktop\moto\bsi-contract\src\contract" />
       <recent name="C:\Users\felix\Desktop\btc\BtcSmartContract\helper\buffer" />
       <recent name="C:\Users\felix\Desktop\moto\MotoSwapFactory" />
       <recent name="C:\Users\felix\Desktop\moto\MotoSwapFactory\tests\config" />
       <recent name="C:\Users\felix\Desktop\moto\MotoSwapFactory\src\btc\contracts" />
-      <recent name="C:\Users\felix\Desktop\moto\MotoSwapFactory\contracts" />
     </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -80,6 +93,7 @@
       <workItem from="1711838939299" duration="11495000" />
       <workItem from="1712032094803" duration="17627000" />
       <workItem from="1712109192892" duration="11145000" />
+      <workItem from="1713586929027" duration="15526000" />
     </task>
     <servers />
   </component>

@@ -6,7 +6,7 @@ import { BytesWriter } from '../buffer/BytesWriter';
 import { encodeSelector, Selector } from '../math/abi';
 import { Revert } from '../types/Revert';
 
-export abstract class BTCContract implements IBTC {
+export abstract class OP_NET implements IBTC {
     public readonly response: BytesWriter = new BytesWriter();
 
     private readonly _owner: string;

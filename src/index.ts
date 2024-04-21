@@ -1,8 +1,8 @@
 import { Blockchain } from './btc/env';
-import { BTCContract } from './btc/contracts/BTCContract';
-import { Moto } from '../contracts/Moto';
+import { OP_NET } from './btc/contracts/OP_NET';
+import { Moto } from './contract/Moto';
 
-export function getContract(): BTCContract {
+export function getContract(): OP_NET {
     Blockchain.requireInitialization();
 
     const defaults = Blockchain.getDefaults();

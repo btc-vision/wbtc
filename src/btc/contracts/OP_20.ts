@@ -1,9 +1,9 @@
-import { ICBRC20 } from './interfaces/ICBRC20';
+import { IOP_20 } from './interfaces/IOP_20';
 import { u256 } from 'as-bignum/assembly';
 import { Address, PotentialAddress } from '../types/Address';
 import { BytesWriter } from '../buffer/BytesWriter';
 import { Calldata } from '../universal/ABIRegistry';
-import { BTCContract } from './BTCContract';
+import { OP_NET } from './OP_NET';
 import { AddressMemoryMap } from '../memory/AddressMemoryMap';
 import { Revert } from '../types/Revert';
 import { SafeMath } from '../types/SafeMath';
@@ -11,12 +11,13 @@ import { Blockchain } from '../env';
 import { MemorySlotData } from '../memory/MemorySlot';
 import { encodeSelector, Selector } from '../math/abi';
 import { MultiAddressMemoryMap } from '../memory/MultiAddressMemoryMap';
+import { StoredU256 } from '../storage/StoredU256';
 
-export abstract class CBRC20 extends BTCContract implements ICBRC20 {
-    public readonly decimals: u8 = 18;
+export abstract class OP_20 extends OP_NET implements IOP_20 {
+    public readonly decimals: u8 = 8;
 
-    public readonly name: string = `CBRC20`;
-    public readonly symbol: string = `CBRC20`;
+    public readonly name: string = `OP_20`;
+    public readonly symbol: string = `OP`;
 
     protected readonly allowanceMap: MultiAddressMemoryMap<Address, Address, MemorySlotData<u256>>;
     protected readonly balanceOfMap: AddressMemoryMap<Address, MemorySlotData<u256>>;
@@ -27,13 +28,14 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
         this.allowanceMap = new MultiAddressMemoryMap<Address, Address, MemorySlotData<u256>>(1, self);
         this.balanceOfMap = new AddressMemoryMap<Address, MemorySlotData<u256>>(2, self);
 
-        this._totalSupply = Blockchain.getStorageAt(self, 3, u256.Zero, u256.Zero);
+        const supply: u256 = Blockchain.getStorageAt(self, 3, u256.Zero, u256.Zero);
+        this._totalSupply = new StoredU256(self, 3, u256.Zero, supply);
     }
 
-    public _totalSupply: MemorySlotData<u256>;
+    public _totalSupply: StoredU256;
 
     public get totalSupply(): u256 {
-        return this._totalSupply;
+        return this._totalSupply.value;
     }
 
     /** METHODS */
@@ -54,20 +56,10 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
     }
 
     public balanceOf(callData: Calldata): BytesWriter {
-        const resp = this._balanceOf(callData.readAddress());
+        const address: Address = callData.readAddress();
+        const resp = this._balanceOf(address);
 
         this.response.writeU256(resp);
-
-        return this.response;
-    }
-
-    public addFreeMoney(callData: Calldata, caller: Address): BytesWriter {
-        const owner: Address = callData.readAddress();
-        const value: u256 = callData.readU256();
-
-        this._addFreeMoney(owner, value, caller);
-
-        this.response.writeBoolean(true);
 
         return this.response;
     }
@@ -108,7 +100,6 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
         this.defineMethodSelector('allowance', false);
         this.defineMethodSelector('approve', true);
         this.defineMethodSelector('balanceOf', false);
-        this.defineMethodSelector('addFreeMoney', true);
         this.defineMethodSelector('burn', true);
         this.defineMethodSelector('mint', true);
         this.defineMethodSelector('transfer', true);
@@ -128,8 +119,6 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
                 return this.approve(calldata, _caller as Address);
             case encodeSelector('balanceOf'):
                 return this.balanceOf(calldata);
-            case encodeSelector('addFreeMoney'):
-                return this.addFreeMoney(calldata, _caller as Address);
             case encodeSelector('burn'):
                 return this.burn(calldata, _caller as Address);
             case encodeSelector('mint'):
@@ -186,15 +175,9 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
         return this.balanceOfMap.get(owner);
     }
 
-    protected _addFreeMoney(owner: string, value: u256, _caller: Address): void {
-        const balance: u256 = this.balanceOfMap.get(owner);
-        const newBalance: u256 = SafeMath.add(balance, value);
-        
-        this.balanceOfMap.set(owner, newBalance);
-        this._totalSupply = SafeMath.add(this._totalSupply, value);
-    }
-
     protected _burn(caller: Address, to: Address, value: u256): boolean {
+        if (this._totalSupply.get() < value) throw new Revert('Insufficient total supply');
+
         if (!this.balanceOfMap.has(to)) throw new Revert();
 
         if (caller === to) {
@@ -209,10 +192,10 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
         if (balance < value) throw new Revert(`Insufficient balance`);
 
         const newBalance: u256 = SafeMath.sub(balance, value);
-
         this.balanceOfMap.set(to, newBalance);
 
-        this._totalSupply = SafeMath.sub(this._totalSupply, value);
+        // @ts-ignore
+        this._totalSupply -= value;
         return true;
     }
 
@@ -230,7 +213,8 @@ export abstract class CBRC20 extends BTCContract implements ICBRC20 {
             this.balanceOfMap.set(to, newToBalance);
         }
 
-        this._totalSupply = SafeMath.add(this._totalSupply, value);
+        // @ts-ignore
+        this._totalSupply += value;
         return true;
     }
 

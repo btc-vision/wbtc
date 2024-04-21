@@ -1,4 +1,4 @@
-import { BTCContract } from '../contracts/BTCContract';
+import { OP_NET } from '../contracts/OP_NET';
 import { encodeSelector, Selector } from '../math/abi';
 import { BytesReader } from '../buffer/BytesReader';
 import { BytesWriter } from '../buffer/BytesWriter';
@@ -10,10 +10,10 @@ export type Calldata = NonNullable<BytesReader>;
 export type ContractABIMap = Set<Selector>;
 export type PropertyABIMap = Set<ABIRegistryItem>;
 
-export type SelectorsMap = Map<BTCContract, PropertyABIMap>;
-export type MethodMap = Map<BTCContract, ContractABIMap>;
+export type SelectorsMap = Map<OP_NET, PropertyABIMap>;
+export type MethodMap = Map<OP_NET, ContractABIMap>;
 
-export type ViewSelectorsMap = Map<BTCContract, Set<Selector>>;
+export type ViewSelectorsMap = Map<OP_NET, Set<Selector>>;
 
 class ABIRegistryBase {
     private methodMap: MethodMap = new Map();
@@ -23,7 +23,7 @@ class ABIRegistryBase {
     private allowedWriteMethods: ViewSelectorsMap = new Map();
 
     // Register properties with their selectors and handlers
-    public defineGetterSelector(contract: BTCContract, name: string, canWrite: boolean): void {
+    public defineGetterSelector(contract: OP_NET, name: string, canWrite: boolean): void {
         const selector: Selector = encodeSelector(name);
 
         let contractMap: PropertyABIMap;
@@ -56,7 +56,7 @@ class ABIRegistryBase {
         this.selectors.set(contract, contractMap);
     }
 
-    public hasSelectorForView(selector: Selector, contract: BTCContract | null = null): BTCContract | null {
+    public hasSelectorForView(selector: Selector, contract: OP_NET | null = null): OP_NET | null {
         if (contract === null) {
             return this.hasViewSelectorInAllContracts(selector);
         }
@@ -64,7 +64,7 @@ class ABIRegistryBase {
         return this.hasViewForContract(contract, selector);
     }
 
-    public hasViewSelectorInAllContracts(selector: Selector): BTCContract | null {
+    public hasViewSelectorInAllContracts(selector: Selector): OP_NET | null {
         const keys = this.viewSelectors.keys();
         const values = this.viewSelectors.values();
 
@@ -83,7 +83,7 @@ class ABIRegistryBase {
         throw new Error(`Selector ${selector} not found.`);
     }
 
-    public hasViewForContract(contract: BTCContract, selector: Selector): BTCContract | null {
+    public hasViewForContract(contract: OP_NET, selector: Selector): OP_NET | null {
         if (!this.viewSelectors.has(contract)) {
             throw new Error(`Contract not found.`);
         }
@@ -122,7 +122,7 @@ class ABIRegistryBase {
     }
 
     // Register methods with their selectors and handlers
-    public defineMethodSelector(contract: BTCContract, name: string, canWrite: boolean): void {
+    public defineMethodSelector(contract: OP_NET, name: string, canWrite: boolean): void {
         const selector: u32 = encodeSelector(name);
 
         if (!this.methodMap.has(contract)) {
@@ -141,7 +141,7 @@ class ABIRegistryBase {
         this.methodMap.set(contract, contractMap);
     }
 
-    public hasMethodByContract(contract: BTCContract, selector: Selector): BTCContract | null {
+    public hasMethodByContract(contract: OP_NET, selector: Selector): OP_NET | null {
         if (!this.methodMap.has(contract)) {
             throw new Error(`Contract not found.`);
         }
@@ -156,7 +156,7 @@ class ABIRegistryBase {
     }
 
     // Call a method by selector
-    public hasMethodBySelector(selector: Selector, contract: BTCContract | null): BTCContract | null {
+    public hasMethodBySelector(selector: Selector, contract: OP_NET | null): OP_NET | null {
         if (!contract) {
             return this.hasMethodBySelectorInAllContracts(selector);
         }
@@ -164,7 +164,7 @@ class ABIRegistryBase {
         return this.hasMethodByContract(contract, selector);
     }
 
-    private addToWriteMethods(contract: BTCContract, selector: Selector): void {
+    private addToWriteMethods(contract: OP_NET, selector: Selector): void {
         let writeSelectorMap: Set<Selector>;
         if (!this.allowedWriteMethods.has(contract)) {
             writeSelectorMap = new Set();
@@ -179,7 +179,7 @@ class ABIRegistryBase {
         }
     }
 
-    private hasMethodBySelectorInAllContracts(selector: Selector): BTCContract | null {
+    private hasMethodBySelectorInAllContracts(selector: Selector): OP_NET | null {
         const keys = this.methodMap.keys();
         const values = this.methodMap.values();
 

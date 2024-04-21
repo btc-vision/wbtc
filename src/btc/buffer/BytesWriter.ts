@@ -7,6 +7,7 @@ import { MemorySlotPointer } from '../memory/MemorySlotPointer';
 import { MemorySlotData } from '../memory/MemorySlot';
 import { BlockchainStorage, PointerStorage } from '../env/BTCEnvironment';
 
+@final
 export class BytesWriter {
     private currentOffset: u32 = 0;
     private buffer: DataView = new DataView(new ArrayBuffer(4));
@@ -80,6 +81,14 @@ export class BytesWriter {
     }
 
     public writeBytes(value: Uint8Array): void {
+        for (let i = 0; i < value.length; i++) {
+            this.writeU8(value[i]);
+        }
+    }
+
+    public writeBytesWithLength(value: Uint8Array): void {
+        this.writeU32(u32(value.length));
+
         for (let i = 0; i < value.length; i++) {
             this.writeU8(value[i]);
         }
@@ -168,6 +177,15 @@ export class BytesWriter {
         this.writeSelector(selector);
     }
 
+    private getChecksum(): u32 {
+        let checksum: u32 = 0;
+        for (let i = 0; i < this.buffer.byteLength; i++) {
+            checksum += this.buffer.getUint8(i);
+        }
+
+        return checksum % (2 ** 32);
+    }
+
     private writeMethodSelectorMap(value: Set<Selector>): void {
         this.writeU16(u16(value.size));
 
@@ -196,7 +214,6 @@ export class BytesWriter {
         }
 
         const bytes: Uint8Array = new Uint8Array(ADDRESS_BYTE_LENGTH);
-
         for (let i: i32 = 0; i < value.length; i++) {
             bytes[i] = value.charCodeAt(i);
         }
