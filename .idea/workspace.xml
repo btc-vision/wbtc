@@ -5,18 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="416d6194-4e78-4683-bece-f002bbf19e08" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/MotoSwapFactory.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/MotoSwapFactory.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/buffer/BytesReader.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/buffer/BytesReader.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/buffer/BytesWriter.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/buffer/BytesWriter.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/contracts/OP_20.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/contracts/OP_20.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/env/BTCEnvironment.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/env/BTCEnvironment.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/exports/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/exports/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/memory/AddressMemoryMap.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/memory/AddressMemoryMap.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/memory/KeyMerger.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/memory/KeyMerger.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/memory/MultiAddressMemoryMap.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/memory/MultiAddressMemoryMap.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/btc/storage/StoredU256.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/btc/storage/StoredU256.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/contract/Moto.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/contract/Moto.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,23 +40,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "chore/bug-fix-with-new-contract",
-    "last_opened_file_path": "C:/Users/felix/Desktop/moto/bsi-contract",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "rearrange.code.on.save": "true",
-    "settings.editor.selected.configurable": "actions.on.save",
-    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\WebStorm 2023.1.1\\plugins\\javascript-impl\\jsLanguageServicesImpl\\external",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;dev&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/felix/Desktop/moto/bsi-contract&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;rearrange.code.on.save&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;actions.on.save&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files\\JetBrains\\WebStorm 2023.1.1\\plugins\\javascript-impl\\jsLanguageServicesImpl\\external&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\felix\Desktop\moto\MotoSwapFactory\src\btc\memory" />
@@ -93,7 +82,8 @@
       <workItem from="1711838939299" duration="11495000" />
       <workItem from="1712032094803" duration="17627000" />
       <workItem from="1712109192892" duration="11145000" />
-      <workItem from="1713586929027" duration="15526000" />
+      <workItem from="1713586929027" duration="16279000" />
+      <workItem from="1713662180352" duration="329000" />
     </task>
     <servers />
   </component>
