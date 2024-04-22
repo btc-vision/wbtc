@@ -73,7 +73,7 @@ export class Moto extends OP_20 {
         const newBalance: u256 = SafeMath.add(balance, value);
         this.balanceOfMap.set(owner, newBalance);
 
-        const newBalanceAfter: u256 = this.balanceOfMap.get(owner);
+        //const newBalanceAfter: u256 = this.balanceOfMap.get(owner);
         //console.log(`Balance of ${owner} is now: ${newBalanceAfter} - ${newBalance}`);
 
         //console.log(`Total supply before adding ${value} to ${owner}: ${this.totalSupply}`);
