@@ -61,26 +61,17 @@ export class Moto extends OP_20 {
         const balanceB: u256 = this._balanceOf(addressB);
 
         const balanceAMinusBalanceB: u256 = SafeMath.sub(balanceA, balanceB);
-        const totalSupplyMinusTwo: u256 = SafeMath.sub(this.totalSupply, u256.fromU32(2));
 
-        return [balanceA, balanceB, balanceAMinusBalanceB, totalSupplyMinusTwo];
+        return [balanceA, balanceB, balanceAMinusBalanceB, this.totalSupply];
     }
 
     protected _addFreeMoney(owner: string, value: u256, _caller: Address): void {
         const balance: u256 = this.balanceOfMap.get(owner);
-        //console.log(`Balance of ${owner}: ${balance}`);
-
         const newBalance: u256 = SafeMath.add(balance, value);
+
         this.balanceOfMap.set(owner, newBalance);
-
-        //const newBalanceAfter: u256 = this.balanceOfMap.get(owner);
-        //console.log(`Balance of ${owner} is now: ${newBalanceAfter} - ${newBalance}`);
-
-        //console.log(`Total supply before adding ${value} to ${owner}: ${this.totalSupply}`);
 
         // @ts-ignore
         this._totalSupply += value;
-
-        //console.log(`Total supply is now: ${this.totalSupply}, added ${value} to ${owner}`);
     }
 }
