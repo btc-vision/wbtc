@@ -212,5 +212,7 @@ export class StoredU256 {
 
     private ensureValue(): void {
         this._value = Blockchain.getStorageAt(this.address, this.pointer, this.subPointer, this.defaultValue);
+
+        console.log(`StoredU256: ensureValue: ${this._value}`);
     }
 }

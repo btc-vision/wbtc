@@ -173,7 +173,7 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
         if (!hasAddress) return u256.Zero;
 
         const userBalance: u256 = this.balanceOfMap.get(owner);
-        if (this.totalSupply < userBalance) throw new Revert(`Insufficient total supply for user balance. Total supply: ${this.totalSupply}, user balance: ${userBalance}`);
+        //if (this.totalSupply < userBalance) throw new Revert(`Insufficient total supply for user balance. Total supply: ${this.totalSupply}, user balance: ${userBalance}`);
 
         return userBalance;
     }

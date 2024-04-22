@@ -96,7 +96,7 @@ export class BlockchainEnvironment {
     public getStorageAt(address: Address, pointer: u16, subPointer: MemorySlotPointer, defaultValue: MemorySlotData<u256>): MemorySlotData<u256> {
         this.ensureStorageAtAddress(address);
 
-        const pointerHash = encodePointerHash(pointer, subPointer);
+        const pointerHash: MemorySlotPointer = encodePointerHash(pointer, subPointer);
         this.ensureStorageAtPointer(address, pointerHash, defaultValue);
 
         const storage: PointerStorage = this.storage.get(address);
@@ -106,7 +106,9 @@ export class BlockchainEnvironment {
         for (let i: i32 = 0; i < allKeys.length; i++) {
             const v: u256 = allKeys[i];
 
-            if (v == pointerHash) {
+            if (u256.eq(v, pointerHash)) {
+                //console.log(`Found key (${v}) with value: ${storage.get(v)} (${allKeys.length})`);
+
                 return storage.get(v);
             }
         }
@@ -229,8 +231,21 @@ export class BlockchainEnvironment {
     }
 
     private _internalSetStorageAt(address: Address, pointerHash: u256, value: MemorySlotData<u256>): void {
-        const storage = this.storage.get(address);
+        const storage: PointerStorage = this.storage.get(address);
+        const keys: u256[] = storage.keys();
+
+        // Delete the old value, there is a bug with u256 and maps.
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+
+            if (u256.eq(key, pointerHash)) {
+                storage.delete(key);
+            }
+        }
+
         storage.set(pointerHash, value);
+
+        //console.log(`[SET] setStorageAt: ${pointerHash} -> ${value}`);
     }
 
     private ensureStorageAtAddress(address: Address): void {
@@ -239,17 +254,30 @@ export class BlockchainEnvironment {
         }
     }
 
-    private ensureStorageAtPointer(address: Address, pointerHash: u256, defaultValue: MemorySlotData<u256>): void {
+    private hasPointerStorageHash(storage: PointerStorage, pointer: MemorySlotPointer): bool {
+        const keys = storage.keys();
+
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+
+            if (u256.eq(key, pointer)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private ensureStorageAtPointer(address: Address, pointerHash: MemorySlotPointer, defaultValue: MemorySlotData<u256>): void {
         if (!this.storage.has(address)) {
             throw new Error(`Storage slot not found for address ${address}`);
         }
 
-        const storage = this.storage.get(address);
-
         // !!! -- IMPORTANT -- !!!. We have to tell the indexer that we need this storage slot to continue even if it's already defined.
         this.requireInitialStorage(address, pointerHash, defaultValue);
 
-        if (!storage.has(pointerHash)) {
+        const storage: PointerStorage = this.storage.get(address);
+        if (!this.hasPointerStorageHash(storage, pointerHash)) {
             this._internalSetStorageAt(address, pointerHash, defaultValue);
         }
     }
