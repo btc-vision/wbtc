@@ -84,6 +84,17 @@ export class BytesReader {
         return String.UTF8.decode(bytes.buffer);
     }
 
+    public readTuple(): u256[] {
+        const length = this.readU32();
+        const result: u256[] = new Array<u256>(length);
+
+        for (let i = 0; i < length; i++) {
+            result[i] = this.readU256();
+        }
+
+        return result;
+    }
+
     public readSelector(): Selector {
         return this.readU32();
     }
