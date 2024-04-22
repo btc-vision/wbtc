@@ -27,9 +27,7 @@ export class SafeMath {
         const c: u256 = u256.mul(a, b);
         const d: u256 = SafeMath.div(c, a);
 
-        console.log(`a: ${a}, b: ${b}, c: ${c}, d: ${d}`);
-
-        if (d != b) {
+        if (u256.ne(d, b)) {
             throw new Error('SafeMath: multiplication overflow');
         }
 

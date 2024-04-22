@@ -61,7 +61,6 @@ export class Moto extends OP_20 {
         const balanceB: u256 = this._balanceOf(addressB);
 
         const balanceAMinusBalanceB: u256 = SafeMath.sub(balanceA, balanceB);
-
         const testMulti: u256 = SafeMath.mul(balanceA, balanceB);
 
         return [balanceA, balanceB, balanceAMinusBalanceB, this.totalSupply, testMulti];
