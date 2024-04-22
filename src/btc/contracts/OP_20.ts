@@ -25,8 +25,8 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
     protected constructor(self: Address, owner: Address) {
         super(self, owner);
 
-        this.allowanceMap = new MultiAddressMemoryMap<Address, Address, MemorySlotData<u256>>(1, self);
-        this.balanceOfMap = new AddressMemoryMap<Address, MemorySlotData<u256>>(2, self);
+        this.allowanceMap = new MultiAddressMemoryMap<Address, Address, MemorySlotData<u256>>(1, self, u256.Zero);
+        this.balanceOfMap = new AddressMemoryMap<Address, MemorySlotData<u256>>(2, self, u256.Zero);
 
         const supply: u256 = Blockchain.getStorageAt(self, 3, u256.Zero, u256.Zero);
         this._totalSupply = new StoredU256(self, 3, u256.Zero, supply);
@@ -172,11 +172,13 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
         const hasAddress = this.balanceOfMap.has(owner);
         if (!hasAddress) return u256.Zero;
 
+        //if (this.totalSupply < userBalance) throw new Revert(`Insufficient total supply for user balance. Total supply: ${this.totalSupply}, user balance: ${userBalance}`);
+
         return this.balanceOfMap.get(owner);
     }
 
     protected _burn(caller: Address, to: Address, value: u256): boolean {
-        if (this._totalSupply.get() < value) throw new Revert('Insufficient total supply');
+        if (this._totalSupply.value < value) throw new Revert('Insufficient total supply');
 
         if (!this.balanceOfMap.has(to)) throw new Revert();
 

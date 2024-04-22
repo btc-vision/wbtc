@@ -13,13 +13,10 @@ import { NetEvent } from '../events/NetEvent';
 export type PointerStorage = Map<MemorySlotPointer, MemorySlotData<u256>>;
 export type BlockchainStorage = Map<Address, PointerStorage>;
 
-export type RequiredStorage = Map<Address, Set<MemorySlotPointer>>;
-
 @final
 export class BlockchainEnvironment {
     public isInitialized: boolean = false;
 
-    private requiredStorage: RequiredStorage = new Map();
     private storage: BlockchainStorage = new Map();
     private initializedStorage: BlockchainStorage = new Map();
 
@@ -40,7 +37,6 @@ export class BlockchainEnvironment {
     public purgeMemory(): void {
         this.storage.clear();
         this.initializedStorage.clear();
-        this.requiredStorage.clear();
 
         this.events = [];
     }
@@ -77,29 +73,6 @@ export class BlockchainEnvironment {
         return result.toBytesReader();
     }
 
-    public getStorageAt(address: Address, pointer: u16, subPointer: MemorySlotPointer, defaultValue: MemorySlotData<u256>): MemorySlotData<u256> {
-        this.ensureStorageAtAddress(address);
-
-        const pointerHash = encodePointerHash(pointer, subPointer);
-
-        this.ensureStorageAtPointer(address, pointerHash, defaultValue);
-        this.requireStorage(address, pointerHash);
-
-        const storage: PointerStorage = this.storage.get(address);
-
-        // maybe find a better way for this
-        const allKeys: u256[] = storage.keys();
-        for (let i: i32 = 0; i < allKeys.length; i++) {
-            const v: u256 = allKeys[i];
-
-            if (v == pointerHash) {
-                return storage.get(v);
-            }
-        }
-
-        return defaultValue;
-    }
-
     public addEvent(event: NetEvent): void {
         this.events.push(event);
     }
@@ -120,31 +93,42 @@ export class BlockchainEnvironment {
         return buffer.getBuffer();
     }
 
-    public hasStorageAt(address: Address, pointer: u16, subPointer: MemorySlotPointer): bool {
+    public getStorageAt(address: Address, pointer: u16, subPointer: MemorySlotPointer, defaultValue: MemorySlotData<u256>): MemorySlotData<u256> {
         this.ensureStorageAtAddress(address);
 
-        const storage: PointerStorage = this.storage.get(address);
-        const pointerHash: u256 = encodePointerHash(pointer, subPointer);
+        const pointerHash: MemorySlotPointer = encodePointerHash(pointer, subPointer);
+        this.ensureStorageAtPointer(address, pointerHash, defaultValue);
 
-        this.requireStorage(address, pointerHash);
+        const storage: PointerStorage = this.storage.get(address);
 
         // maybe find a better way for this
         const allKeys: u256[] = storage.keys();
         for (let i: i32 = 0; i < allKeys.length; i++) {
             const v: u256 = allKeys[i];
 
-            if (v == pointerHash) {
-                return true;
+            if (u256.eq(v, pointerHash)) {
+                //console.log(`Found key (${v}) with value: ${storage.get(v)} (${allKeys.length})`);
+
+                return storage.get(v);
             }
         }
 
-        return false;
+        return defaultValue;
     }
 
-    public setStorageAt(address: Address, pointer: u16, keyPointer: MemorySlotPointer, value: MemorySlotData<u256>): void {
+    public hasStorageAt(address: Address, pointer: u16, subPointer: MemorySlotPointer): bool {
         this.ensureStorageAtAddress(address);
 
-        const pointerHash = encodePointerHash(pointer, keyPointer);
+        // We mark zero as the default value for the storage, if something is 0, the storage slot get deleted or is non-existent
+        const val: u256 = this.getStorageAt(address, pointer, subPointer, u256.Zero);
+        return val != u256.Zero;
+    }
+
+    public setStorageAt(address: Address, pointer: u16, keyPointer: MemorySlotPointer, value: MemorySlotData<u256>, defaultValue: MemorySlotData<u256>): void {
+        this.ensureStorageAtAddress(address);
+
+        const pointerHash: u256 = encodePointerHash(pointer, keyPointer);
+        this.ensureStorageAtPointer(address, pointerHash, defaultValue);
 
         this._internalSetStorageAt(address, pointerHash, value);
     }
@@ -161,17 +145,6 @@ export class BlockchainEnvironment {
         if (!this.contracts.has(address)) throw new Error(`Contract not found for address ${address}`);
 
         return this.contracts.get(address);
-    }
-
-    public requireStorage(address: Address, pointerHash: u256): void {
-        if (!this.requiredStorage.has(address)) {
-            this.requiredStorage.set(address, new Set<MemorySlotPointer>());
-        }
-
-        const slots = this.requiredStorage.get(address);
-        if (!slots.has(pointerHash)) {
-            slots.add(pointerHash);
-        }
     }
 
     public requireInitialStorage(address: Address, pointerHash: u256, defaultValue: u256): void {
@@ -257,38 +230,22 @@ export class BlockchainEnvironment {
         return memoryWriter.getBuffer();
     }
 
-    public writeRequiredStorage(): Uint8Array {
-        const memoryWriter: BytesWriter = new BytesWriter();
+    private _internalSetStorageAt(address: Address, pointerHash: u256, value: MemorySlotData<u256>): void {
+        const storage: PointerStorage = this.storage.get(address);
+        const keys: u256[] = storage.keys();
 
-        memoryWriter.writeU32(this.requiredStorage.size);
+        // Delete the old value, there is a bug with u256 and maps.
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
 
-        const keys: Address[] = this.requiredStorage.keys();
-        const values: Set<MemorySlotPointer>[] = this.requiredStorage.values();
-
-        for (let i: i32 = 0; i < keys.length; i++) {
-            const address: Address = keys[i];
-            const slots: Set<MemorySlotPointer> = values[i];
-
-            memoryWriter.writeAddress(address);
-            memoryWriter.writeU32(slots.size);
-
-            const slotKeys: MemorySlotPointer[] = slots.values();
-            for (let j: i32 = 0; j < slotKeys.length; j++) {
-                const slot: MemorySlotPointer = slotKeys[j];
-                memoryWriter.writeU256(slot);
+            if (u256.eq(key, pointerHash)) {
+                storage.delete(key);
             }
         }
 
-        this.requiredStorage.clear();
-
-        return memoryWriter.getBuffer();
-    }
-
-    private _internalSetStorageAt(address: Address, pointerHash: u256, value: MemorySlotData<u256>): void {
-        this.requireStorage(address, pointerHash);
-
-        const storage = this.storage.get(address);
         storage.set(pointerHash, value);
+
+        //console.log(`[SET] setStorageAt: ${pointerHash} -> ${value}`);
     }
 
     private ensureStorageAtAddress(address: Address): void {
@@ -297,14 +254,30 @@ export class BlockchainEnvironment {
         }
     }
 
-    private ensureStorageAtPointer(address: Address, pointerHash: u256, defaultValue: MemorySlotData<u256>): void {
+    private hasPointerStorageHash(storage: PointerStorage, pointer: MemorySlotPointer): bool {
+        const keys = storage.keys();
+
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+
+            if (u256.eq(key, pointer)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private ensureStorageAtPointer(address: Address, pointerHash: MemorySlotPointer, defaultValue: MemorySlotData<u256>): void {
         if (!this.storage.has(address)) {
             throw new Error(`Storage slot not found for address ${address}`);
         }
 
-        const storage = this.storage.get(address);
-        if (!storage.has(pointerHash)) {
-            this.requireInitialStorage(address, pointerHash, defaultValue);
+        // !!! -- IMPORTANT -- !!!. We have to tell the indexer that we need this storage slot to continue even if it's already defined.
+        this.requireInitialStorage(address, pointerHash, defaultValue);
+
+        const storage: PointerStorage = this.storage.get(address);
+        if (!this.hasPointerStorageHash(storage, pointerHash)) {
             this._internalSetStorageAt(address, pointerHash, defaultValue);
         }
     }

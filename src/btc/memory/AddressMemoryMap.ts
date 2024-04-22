@@ -11,7 +11,7 @@ export class AddressMemoryMap<K extends string, V extends MemorySlotData<u256>> 
 
     private readonly memoryAllocatorAddress: Address;
 
-    constructor(pointer: u16, self: Address) {
+    constructor(pointer: u16, self: Address, private readonly defaultValue: V) {
         super();
 
         this.pointer = pointer;
@@ -20,23 +20,25 @@ export class AddressMemoryMap<K extends string, V extends MemorySlotData<u256>> 
 
     public set(key: K, value: V): this {
         const keyHash: MemorySlotPointer = encodePointer(key);
-        Blockchain.setStorageAt(this.memoryAllocatorAddress, this.pointer, keyHash, value);
+        Blockchain.setStorageAt(this.memoryAllocatorAddress, this.pointer, keyHash, value, this.defaultValue);
 
         return this;
     }
 
     public get(key: K): MemorySlotData<u256> {
-        return Blockchain.getStorageAt(this.memoryAllocatorAddress, this.pointer, encodePointer(key), u256.Zero);
+        return Blockchain.getStorageAt(this.memoryAllocatorAddress, this.pointer, encodePointer(key), this.defaultValue);
     }
 
     public has(key: K): bool {
         return Blockchain.hasStorageAt(this.memoryAllocatorAddress, this.pointer, encodePointer(key));
     }
 
+    @unsafe
     public delete(_key: K): bool {
         throw new Error('Method not implemented.');
     }
 
+    @unsafe
     public clear(): void {
         throw new Error('Method not implemented.');
     }

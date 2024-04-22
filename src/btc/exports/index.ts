@@ -61,12 +61,6 @@ export function getWriteMethods(): Uint8Array {
     return Blockchain.getWriteMethods();
 }
 
-export function getRequiredStorage(): Uint8Array {
-    Blockchain.requireInitialization();
-
-    return Blockchain.writeRequiredStorage();
-}
-
 export function getModifiedStorage(): Uint8Array {
     Blockchain.requireInitialization();
 
