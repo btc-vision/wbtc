@@ -16,6 +16,7 @@ export class SafeMath {
         if (a < b) {
             throw new Error('SafeMath: subtraction overflow');
         }
+
         return u256.sub(a, b);
     }
 

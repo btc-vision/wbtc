@@ -9,7 +9,7 @@ export class MultiAddressMemoryMap<K extends string, K2 extends string, V extend
 
     private readonly memoryAllocatorAddress: Address;
 
-    constructor(pointer: u16, self: Address) {
+    constructor(pointer: u16, self: Address, private readonly defaultValue: V) {
         super();
 
         this.pointer = pointer;
@@ -53,7 +53,7 @@ export class MultiAddressMemoryMap<K extends string, K2 extends string, V extend
 
     private createKeyMerger(key: K): void {
         if (!super.has(key)) {
-            super.set(key, new KeyMerger<K, K2, V>(key, this.pointer, this.memoryAllocatorAddress));
+            super.set(key, new KeyMerger<K, K2, V>(key, this.pointer, this.memoryAllocatorAddress, this.defaultValue));
         }
     }
 }

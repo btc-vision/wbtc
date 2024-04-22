@@ -32,15 +32,38 @@ export class Moto extends OP_20 {
         switch (method) {
             case encodeSelector('addFreeMoney'):
                 return this.addFreeMoney(calldata, _caller as Address);
+            case encodeSelector('testMethodMultipleAddresses'):
+                return this.testMethodMultipleAddresses(calldata);
         }
 
         return super.callMethod(method, calldata, _caller);
+    }
+
+    public testMethodMultipleAddresses(callData: Calldata): BytesWriter {
+        const addressA: Address = callData.readAddress();
+        const addressB: Address = callData.readAddress();
+
+        const resp = this._testMethodMultipleAddresses(addressA, addressB);
+        this.response.writeTuple(resp);
+
+        return this.response;
     }
 
     public defineSelectors(): void {
         super.defineSelectors();
 
         this.defineMethodSelector('addFreeMoney', true);
+        this.defineMethodSelector('testMethodMultipleAddresses', false);
+    }
+
+    protected _testMethodMultipleAddresses(addressA: Address, addressB: Address): u256[] {
+        const balanceA: u256 = this._balanceOf(addressA);
+        const balanceB: u256 = this._balanceOf(addressB);
+
+        const balanceAMinusBalanceB: u256 = SafeMath.sub(balanceA, balanceB);
+        const totalSupplyMinusTwo: u256 = SafeMath.sub(this.totalSupply, u256.fromU32(2));
+
+        return [balanceA, balanceB, balanceAMinusBalanceB, totalSupplyMinusTwo];
     }
 
     protected _addFreeMoney(owner: string, value: u256, _caller: Address): void {

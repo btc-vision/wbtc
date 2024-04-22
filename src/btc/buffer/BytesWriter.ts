@@ -80,6 +80,14 @@ export class BytesWriter {
         }
     }
 
+    public writeTuple(value: u256[]): void {
+        this.writeU32(u32(value.length));
+
+        for (let i = 0; i < value.length; i++) {
+            this.writeU256(value[i]);
+        }
+    }
+
     public writeBytes(value: Uint8Array): void {
         for (let i = 0; i < value.length; i++) {
             this.writeU8(value[i]);

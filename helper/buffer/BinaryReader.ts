@@ -15,6 +15,7 @@ import {
     u32,
     u8,
 } from './types/math.js';
+import { u256 } from 'as-bignum/assembly';
 
 export class BinaryReader {
     private buffer: DataView;
