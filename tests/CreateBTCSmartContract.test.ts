@@ -2,16 +2,22 @@ import 'jest';
 
 // @ts-ignore
 import * as wasm from '../config/runDebug.js';
-import { MotoSwapFactory } from '../contracts/MotoSwapFactory';
-import { ContractABIMap, MethodMap, PropertyABIMap, SelectorsMap } from '../helper/buffer/types/math';
-import { ABICoder, ABIDataTypes } from '../helper/abi/ABICoder';
-import { BinaryReader } from '../helper/buffer/BinaryReader';
+import { Moto } from '../src/contract/Moto';
+import {
+    ABICoder,
+    ABIDataTypes,
+    BinaryReader,
+    ContractABIMap,
+    MethodMap,
+    PropertyABIMap,
+    SelectorsMap,
+} from '@btc-vision/bsi-binary';
 
 describe('I should be able to create my own smart contract for Bitcoin.', () => {
     const OWNER = 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq';
     const CONTRACT_ADDRESS = 'bc1p5d7rjq7g6rdk2yhzks9smlaqtedr4dekq08ge8ztwac72sfr9rusxg3297';
 
-    let module: MotoSwapFactory | null = null;
+    let module: Moto | null = null;
     let moduleWasm: Awaited<typeof wasm.promise>;
 
     let decodedViewSelectors: SelectorsMap;

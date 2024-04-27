@@ -27,9 +27,9 @@ export class BytesWriter {
         this.currentOffset += 2;
     }
 
-    public writeU32(value: u32): void {
+    public writeU32(value: u32, le: boolean = true): void {
         this.allocSafe(4);
-        this.buffer.setUint32(this.currentOffset, value, true);
+        this.buffer.setUint32(this.currentOffset, value, le);
         this.currentOffset += 4;
     }
 
@@ -66,7 +66,7 @@ export class BytesWriter {
     }
 
     public writeSelector(value: Selector): void {
-        this.writeU32(value);
+        this.writeU32(value, false);
     }
 
     public writeBoolean(value: boolean): void {
