@@ -18,10 +18,10 @@ export class Moto extends OP_20 {
     }
 
     public addFreeMoney(callData: Calldata, caller: Address): BytesWriter {
-        const owner: Address = callData.readAddress();
+        const sender: Address = callData.readAddress();
         const value: u256 = callData.readU256();
 
-        this._addFreeMoney(owner, value, caller);
+        this._addFreeMoney(sender, value, caller);
 
         this.response.writeBoolean(true);
 
