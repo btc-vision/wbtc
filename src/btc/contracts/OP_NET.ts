@@ -25,8 +25,6 @@ export abstract class OP_NET implements IBTC {
             throw new Revert('CONTRACT ALREADY EXISTS.');
         }
 
-        //memory.grow(1); // 64k allocate memory for the contract
-
         this._owner = owner;
         this._address = contractAddress;
 
