@@ -222,7 +222,6 @@ export class BlockchainEnvironment {
 
     public initializedStorageToBytes(): Uint8Array {
         const memoryWriter: BytesWriter = new BytesWriter();
-
         memoryWriter.writeStorage(this.initializedStorage);
 
         this.initializedStorage.clear();
