@@ -8,21 +8,22 @@ import { ABIRegistry, Calldata } from '../universal/ABIRegistry';
 import { BytesReader } from '../buffer/BytesReader';
 import { encodePointerHash, Selector } from '../math/abi';
 import { BytesWriter } from '../buffer/BytesWriter';
-import { NetEvent } from '../events/NetEvent';
+import { MAX_EVENTS, NetEvent } from '../events/NetEvent';
 
 export type PointerStorage = Map<MemorySlotPointer, MemorySlotData<u256>>;
 export type BlockchainStorage = Map<Address, PointerStorage>;
 
 @final
 export class BlockchainEnvironment {
+    private static readonly runtimeException: string = 'RuntimeException';
+
     public isInitialized: boolean = false;
 
     private storage: BlockchainStorage = new Map();
     private initializedStorage: BlockchainStorage = new Map();
-
     private contracts: Map<Address, OP_NET> = new Map();
-    private defaults: ContractDefaults = new ContractDefaults();
 
+    private defaults: ContractDefaults = new ContractDefaults();
     private events: NetEvent[] = [];
 
     constructor() {
@@ -30,7 +31,7 @@ export class BlockchainEnvironment {
 
     public requireInitialization(): void {
         if (!this.isInitialized) {
-            throw new Error('Not initialized');
+            throw this.error('Not initialized');
         }
     }
 
@@ -43,7 +44,7 @@ export class BlockchainEnvironment {
 
     public init(owner: Address, contractAddress: Address): void {
         if (this.isInitialized) {
-            throw new Error('Already initialized');
+            throw this.error(`Already initialized`);
         }
 
         this.defaults.loadContractDefaults(owner, contractAddress);
@@ -60,12 +61,12 @@ export class BlockchainEnvironment {
     public call(self: OP_NET, destinationContract: Address, method: Selector, calldata: Calldata): BytesReader {
         const contract: OP_NET = this.contracts.get(destinationContract);
         if (!contract) {
-            throw new Error(`Contract not found for address ${destinationContract}`);
+            throw this.error(`Contract not found for address ${destinationContract}`);
         }
 
         const methodToCall: OP_NET | null = ABIRegistry.hasMethodByContract(contract, method);
         if (!methodToCall) {
-            throw new Error(`Method not found for selector ${method}`);
+            throw this.error(`Method not found for selector ${method}`);
         }
 
         const result: BytesWriter = methodToCall.callMethod(method, calldata, self.address);
@@ -74,17 +75,27 @@ export class BlockchainEnvironment {
     }
 
     public addEvent(event: NetEvent): void {
+        if (this.events.length >= MAX_EVENTS) {
+            throw this.error(`Too many events in the same transaction.`);
+        }
+
         this.events.push(event);
     }
 
     public getEvents(): Uint8Array {
-        const buffer: BytesWriter = new BytesWriter();
-        buffer.writeU32(this.events.length);
+        const eventLength: u8 = u8(this.events.length);
+        if (eventLength > MAX_EVENTS) {
+            throw this.error('Too many events');
+        }
 
-        for (let i: i32 = 0; i < this.events.length; i++) {
+        const buffer: BytesWriter = new BytesWriter();
+        buffer.writeU8(eventLength);
+
+        for (let i: u8 = 0; i < eventLength; i++) {
             const event: NetEvent = this.events[i];
 
             buffer.writeStringWithLength(event.eventType);
+            buffer.writeU64(event.getEventDataSelector());
             buffer.writeBytesWithLength(event.getEventData());
         }
 
@@ -107,8 +118,6 @@ export class BlockchainEnvironment {
             const v: u256 = allKeys[i];
 
             if (u256.eq(v, pointerHash)) {
-                //console.log(`Found key (${v}) with value: ${storage.get(v)} (${allKeys.length})`);
-
                 return storage.get(v);
             }
         }
@@ -142,7 +151,7 @@ export class BlockchainEnvironment {
     }
 
     public getContract(address: Address): OP_NET {
-        if (!this.contracts.has(address)) throw new Error(`Contract not found for address ${address}`);
+        if (!this.contracts.has(address)) throw this.error(`Contract not found for address ${address}`);
 
         return this.contracts.get(address);
     }
@@ -180,7 +189,7 @@ export class BlockchainEnvironment {
         const hasGrown: i32 = memory.grow(num);
 
         if (hasGrown < 0) {
-            throw new Error('Memory could not be grown');
+            throw this.error('Memory could not be grown');
         }
 
         return hasGrown;
@@ -212,7 +221,6 @@ export class BlockchainEnvironment {
 
     public storageToBytes(): Uint8Array {
         const memoryWriter: BytesWriter = new BytesWriter();
-
         memoryWriter.writeStorage(this.storage);
 
         this.storage.clear();
@@ -229,6 +237,10 @@ export class BlockchainEnvironment {
         return memoryWriter.getBuffer();
     }
 
+    private error(msg: string): Error {
+        return new Error(`${BlockchainEnvironment.runtimeException}: ${msg}`);
+    }
+
     private _internalSetStorageAt(address: Address, pointerHash: u256, value: MemorySlotData<u256>): void {
         const storage: PointerStorage = this.storage.get(address);
         const keys: u256[] = storage.keys();
@@ -243,8 +255,6 @@ export class BlockchainEnvironment {
         }
 
         storage.set(pointerHash, value);
-
-        //console.log(`[SET] setStorageAt: ${pointerHash} -> ${value}`);
     }
 
     private ensureStorageAtAddress(address: Address): void {
@@ -269,7 +279,7 @@ export class BlockchainEnvironment {
 
     private ensureStorageAtPointer(address: Address, pointerHash: MemorySlotPointer, defaultValue: MemorySlotData<u256>): void {
         if (!this.storage.has(address)) {
-            throw new Error(`Storage slot not found for address ${address}`);
+            throw this.error(`Storage slot not found for address ${address}`);
         }
 
         // !!! -- IMPORTANT -- !!!. We have to tell the indexer that we need this storage slot to continue even if it's already defined.

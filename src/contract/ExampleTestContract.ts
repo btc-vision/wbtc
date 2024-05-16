@@ -5,9 +5,10 @@ import { BytesWriter } from '../btc/buffer/BytesWriter';
 import { u256 } from 'as-bignum/assembly';
 import { encodeSelector, Selector } from '../btc/math/abi';
 import { SafeMath } from '../btc/types/SafeMath';
+import { MintEvent } from './events/MintEvent';
 
 @final
-export class PenTest extends OP_20 {
+export class ExampleTestContract extends OP_20 {
     public readonly decimals: u8 = 8;
 
     public readonly name: string = 'Motoswap';
@@ -244,6 +245,14 @@ export class PenTest extends OP_20 {
 
         // @ts-ignore
         this._totalSupply += value;
+        
+        this.createMintEvent(owner, value);
+    }
+
+    private createMintEvent(owner: Address, value: u256): void {
+        const mintEvent = new MintEvent(owner, value);
+
+        this.emitEvent(mintEvent);
     }
 
     private generateRndString(): string {
@@ -255,9 +264,5 @@ export class PenTest extends OP_20 {
         }
 
         return result;
-    }
-
-    private rnd(): u256 {
-        return u256.fromU64(Math.random() * 100000000);
     }
 }
