@@ -44,10 +44,12 @@ export class BytesReader {
     }
 
     public readU64(): u64 {
-        const low = this.readU32();
-        const high = this.readU32();
+        this.verifyEnd(this.currentOffset + 8);
 
-        return (u64(high) << u64(32)) | low;
+        const value = this.buffer.getUint64(this.currentOffset, true);
+        this.currentOffset += 8;
+
+        return value;
     }
 
     public readU256(): u256 {

@@ -33,6 +33,7 @@
         "@btc-vision/bsi-binary": "github:btc-vision/bsi-binary",
         "as-bignum": "^0.3.0",
         "babel-plugin-transform-import-meta": "^2.2.1",
+        "gulplog": "^2.2.0",
         "ts-jest": "^29.1.2",
         "ts-node": "^10.9.2"
     }

@@ -5,6 +5,7 @@ import { ABIRegistry, Calldata } from '../universal/ABIRegistry';
 import { BytesWriter } from '../buffer/BytesWriter';
 import { encodeSelector, Selector } from '../math/abi';
 import { Revert } from '../types/Revert';
+import { MAX_EVENT_DATA_SIZE, NetEvent } from '../events/NetEvent';
 
 export abstract class OP_NET implements IBTC {
     public readonly response: BytesWriter = new BytesWriter();
@@ -24,8 +25,6 @@ export abstract class OP_NET implements IBTC {
         if (Blockchain.hasContract(contractAddress)) {
             throw new Revert('CONTRACT ALREADY EXISTS.');
         }
-
-        //memory.grow(1); // 64k allocate memory for the contract
 
         this._owner = owner;
         this._address = contractAddress;
@@ -73,6 +72,14 @@ export abstract class OP_NET implements IBTC {
         }
 
         return this.response;
+    }
+
+    protected emitEvent(event: NetEvent): void {
+        if (event.length > MAX_EVENT_DATA_SIZE) {
+            throw new Error('Event data length exceeds maximum length.');
+        }
+
+        Blockchain.addEvent(event);
     }
 
     protected defineGetterSelector(name: string, canWrite: boolean): void {
