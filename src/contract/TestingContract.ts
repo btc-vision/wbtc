@@ -8,7 +8,7 @@ import { SafeMath } from '../btc/types/SafeMath';
 import { MintEvent } from './events/MintEvent';
 
 @final
-export class ExampleTestContract extends OP_20 {
+export class TestingContract extends OP_20 {
     public readonly decimals: u8 = 8;
 
     public readonly name: string = 'Motoswap';
@@ -18,6 +18,7 @@ export class ExampleTestContract extends OP_20 {
         super(self, owner);
     }
 
+    /** Allows us to test methods by giving our self a balance */
     public addFreeMoney(callData: Calldata, caller: Address): BytesWriter {
         const sender: Address = callData.readAddress();
         const value: u256 = callData.readU256();
@@ -85,6 +86,18 @@ export class ExampleTestContract extends OP_20 {
         /** Generic test methods */
         this.defineMethodSelector('addFreeMoney', true);
         this.defineMethodSelector('testMethodMultipleAddresses', false);
+    }
+
+    protected _addFreeMoney(owner: string, value: u256, _caller: Address): void {
+        const balance: u256 = this.balanceOfMap.get(owner);
+        const newBalance: u256 = SafeMath.add(balance, value);
+
+        this.balanceOfMap.set(owner, newBalance);
+
+        // @ts-ignore
+        this._totalSupply += value;
+
+        this.createMintEvent(owner, value);
     }
 
     protected crashIndexerTest1(): BytesWriter {
@@ -235,18 +248,6 @@ export class ExampleTestContract extends OP_20 {
         const testMulti: u256 = SafeMath.mul(balanceA, balanceB);
 
         return [balanceA, balanceB, balanceAMinusBalanceB, this.totalSupply, testMulti];
-    }
-
-    protected _addFreeMoney(owner: string, value: u256, _caller: Address): void {
-        const balance: u256 = this.balanceOfMap.get(owner);
-        const newBalance: u256 = SafeMath.add(balance, value);
-
-        this.balanceOfMap.set(owner, newBalance);
-
-        // @ts-ignore
-        this._totalSupply += value;
-        
-        this.createMintEvent(owner, value);
     }
 
     private createMintEvent(owner: Address, value: u256): void {

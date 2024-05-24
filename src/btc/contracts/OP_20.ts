@@ -252,7 +252,7 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
         return true;
     }
 
-    protected _transferFrom(caller: Address, from: string, to: string, value: u256): boolean {
+    protected _transferFrom(caller: Address, from: Address, to: Address, value: u256): boolean {
         if (!this.allowanceMap.has(from)) throw new Revert();
 
         const fromAllowanceMap = this.allowanceMap.get(from);

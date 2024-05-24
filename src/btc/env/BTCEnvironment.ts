@@ -185,16 +185,6 @@ export class BlockchainEnvironment {
         __free(pointer);
     }
 
-    public growMemory(num: i32): i32 {
-        const hasGrown: i32 = memory.grow(num);
-
-        if (hasGrown < 0) {
-            throw this.error('Memory could not be grown');
-        }
-
-        return hasGrown;
-    }
-
     public loadStorage(data: Uint8Array): void {
         this.purgeMemory();
 
