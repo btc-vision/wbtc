@@ -217,7 +217,9 @@ export class BytesWriter {
 
     public allocSafe(size: u32): void {
         if (this.currentOffset + size > u32(this.buffer.byteLength)) {
-            this.resize(size);
+            const sizeDiff: u32 = size - (u32(this.buffer.byteLength) - this.currentOffset);
+
+            this.resize(sizeDiff);
         }
     }
 

@@ -77,10 +77,6 @@ export function loadStorage(data: Uint8Array): void {
     Blockchain.loadStorage(data);
 }
 
-export function growMemory(pages: i32): i32 {
-    return Blockchain.growMemory(pages);
-}
-
 export function allocateMemory(size: usize): usize {
     return Blockchain.allocateMemory(size);
 }
