@@ -12,6 +12,9 @@ import { MemorySlotData } from '../memory/MemorySlot';
 import { encodeSelector, Selector } from '../math/abi';
 import { MultiAddressMemoryMap } from '../memory/MultiAddressMemoryMap';
 import { StoredU256 } from '../storage/StoredU256';
+import { MintEvent } from '../../contract/events/MintEvent';
+import { TransferEvent } from '../../contract/events/TransferEvent';
+import { BurnEvent } from '../../contract/events/BurnEvent';
 
 export abstract class OP_20 extends OP_NET implements IOP_20 {
     public readonly decimals: u8 = 8;
@@ -172,8 +175,6 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
         const hasAddress = this.balanceOfMap.has(owner);
         if (!hasAddress) return u256.Zero;
 
-        //if (this.totalSupply < userBalance) throw new Revert(`Insufficient total supply for user balance. Total supply: ${this.totalSupply}, user balance: ${userBalance}`);
-
         return this.balanceOfMap.get(owner);
     }
 
@@ -198,6 +199,8 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
 
         // @ts-ignore
         this._totalSupply -= value;
+
+        this.createBurnEvent(value);
         return true;
     }
 
@@ -217,6 +220,8 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
 
         // @ts-ignore
         this._totalSupply += value;
+
+        this.createMintEvent(to, value);
         return true;
     }
 
@@ -237,7 +242,6 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
         if (balance < value) throw new Revert(`Insufficient balance`);
 
         const newBalance: u256 = SafeMath.sub(balance, value);
-
         this.balanceOfMap.set(caller, newBalance);
 
         if (!this.balanceOfMap.has(to)) {
@@ -248,6 +252,8 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
 
             this.balanceOfMap.set(to, newToBalance);
         }
+
+        this.createTransferEvent(caller, to, value);
 
         return true;
     }
@@ -285,6 +291,26 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
             this.balanceOfMap.set(to, newToBalance);
         }
 
+        this.createTransferEvent(from, to, value);
+
         return true;
+    }
+
+    private createMintEvent(owner: Address, value: u256): void {
+        const mintEvent = new MintEvent(owner, value);
+
+        this.emitEvent(mintEvent);
+    }
+
+    private createTransferEvent(from: Address, to: Address, value: u256): void {
+        const transferEvent = new TransferEvent(from, to, value);
+
+        this.emitEvent(transferEvent);
+    }
+
+    private createBurnEvent(value: u256): void {
+        const burnEvent = new BurnEvent(value);
+
+        this.emitEvent(burnEvent);
     }
 }
