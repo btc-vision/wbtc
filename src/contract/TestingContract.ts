@@ -6,6 +6,7 @@ import { u256 } from 'as-bignum/assembly';
 import { encodeSelector, Selector } from '../btc/math/abi';
 import { SafeMath } from '../btc/types/SafeMath';
 import { MintEvent } from './events/MintEvent';
+import { randomU64 } from '../btc/math/rnd';
 
 @final
 export class TestingContract extends OP_20 {
@@ -256,12 +257,13 @@ export class TestingContract extends OP_20 {
         this.emitEvent(mintEvent);
     }
 
+
     private generateRndString(): string {
         const chars: string = 'abcdefghijklmnopqrstuvwxyz0123456789';
         let result: string = '';
 
         for (let i: i32 = 0; i < 62; i++) {
-            result += chars.charAt(i32(Math.floor(Math.random() * chars.length)));
+            result += chars.charAt(i32(randomU64() % chars.length));
         }
 
         return result;

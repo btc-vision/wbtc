@@ -75,7 +75,7 @@ export class BlockchainEnvironment {
     }
 
     public addEvent(event: NetEvent): void {
-        if (this.events.length >= MAX_EVENTS) {
+        if (this.events.length >= i32(MAX_EVENTS)) {
             throw this.error(`Too many events in the same transaction.`);
         }
 

@@ -118,13 +118,6 @@ export class BytesReader {
         return value;
     }
 
-    public readDouble(): f64 {
-        const value = this.buffer.getFloat64(this.currentOffset, true);
-        this.currentOffset += 8;
-
-        return value;
-    }
-
     public readAddress(): Address {
         return this.readString(ADDRESS_BYTE_LENGTH);
     }
