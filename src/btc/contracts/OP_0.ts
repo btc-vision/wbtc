@@ -16,7 +16,7 @@ import { MintEvent } from '../../contract/events/MintEvent';
 import { TransferEvent } from '../../contract/events/TransferEvent';
 import { BurnEvent } from '../../contract/events/BurnEvent';
 
-export abstract class OP_20 extends OP_NET implements IOP_20 {
+export abstract class OP_0 extends OP_NET implements IOP_20 {
     public readonly decimals: u8 = 8;
 
     public readonly name: string = `OP_20`;

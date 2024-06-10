@@ -1,11 +1,11 @@
 import { Address, PotentialAddress } from '../btc/types/Address';
-import { OP_20 } from '../btc/contracts/OP_20';
+import { OP_0 } from '../btc/contracts/OP_0';
 import { Calldata } from '../btc/universal/ABIRegistry';
 import { BytesWriter } from '../btc/buffer/BytesWriter';
 import { Selector } from '../btc/math/abi';
 
 @final
-export class wBTC extends OP_20 {
+export class wBTC extends OP_0 {
     public readonly decimals: u8 = 8;
 
     public readonly name: string = 'Wrapped Bitcoin';
