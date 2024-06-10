@@ -3,7 +3,7 @@ import { BytesWriter } from '../../buffer/BytesWriter';
 import { Calldata } from '../../universal/ABIRegistry';
 import { StoredU256 } from '../../storage/StoredU256';
 
-export interface IOP_20 {
+export interface IOP_0 {
     readonly name: string;
     readonly symbol: string;
 
