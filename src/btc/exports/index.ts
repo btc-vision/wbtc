@@ -6,7 +6,7 @@ import { OP_NET } from '../contracts/OP_NET';
 import { Address } from '../types/Address';
 import { BytesReader } from '../buffer/BytesReader';
 
-export function readMethod(method: Selector, contract: OP_NET | null, data: Uint8Array, caller: Address | null): Uint8Array {
+export function readMethod(method: Selector, contract: OP_NET | null, data: Uint8Array): Uint8Array {
     Blockchain.requireInitialization();
 
     const methodToCall = ABIRegistry.hasMethodBySelector(method, contract);
@@ -15,13 +15,9 @@ export function readMethod(method: Selector, contract: OP_NET | null, data: Uint
     }
 
     const calldata: Calldata = new BytesReader(data);
-    const result: BytesWriter = methodToCall.callMethod(method, calldata, caller);
+    const result: BytesWriter = methodToCall.callMethod(method, calldata);
 
     return result.getBuffer();
-}
-
-export function INIT(owner: Address, contractAddress: Address): void {
-    Blockchain.init(owner, contractAddress);
 }
 
 export function readView(method: Selector, contract: OP_NET | null): Uint8Array {
@@ -33,8 +29,11 @@ export function readView(method: Selector, contract: OP_NET | null): Uint8Array 
     }
 
     const result: BytesWriter = methodToCall.callView(method);
-
     return result.getBuffer();
+}
+
+export function INIT(owner: Address, contractAddress: Address): void {
+    Blockchain.init(owner, contractAddress);
 }
 
 export function getViewABI(): Uint8Array {
@@ -74,19 +73,31 @@ export function initializeStorage(): Uint8Array {
 }
 
 export function loadStorage(data: Uint8Array): void {
+    Blockchain.requireInitialization();
+
     Blockchain.loadStorage(data);
 }
 
-export function allocateMemory(size: usize): usize {
-    return Blockchain.allocateMemory(size);
+export function loadCallsResponse(data: Uint8Array): void {
+    Blockchain.requireInitialization();
+
+    Blockchain.loadCallsResponse(data);
 }
 
-export function deallocateMemory(pointer: i32): void {
-    return Blockchain.deallocateMemory(pointer);
+export function getCalls(): Uint8Array {
+    Blockchain.requireInitialization();
+
+    return Blockchain.getCalls();
 }
 
 export function isInitialized(): boolean {
     return Blockchain.isInitialized;
+}
+
+export function setEnvironment(data: Uint8Array): void {
+    Blockchain.requireInitialization();
+
+    Blockchain.setEnvironment(data);
 }
 
 export function purgeMemory(): void {

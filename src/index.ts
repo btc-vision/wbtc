@@ -8,10 +8,9 @@ export function getContract(): OP_NET {
     const defaults = Blockchain.getDefaults();
     const contract = new wBTC(defaults.selfAddress, defaults.ownerAddress);
 
-    Blockchain.setContract(defaults.selfAddress, contract);
+    Blockchain.setContract(contract); // Prevent context loss!
 
     return contract;
 }
-
 
 export * from './btc/exports';

@@ -1,4 +1,4 @@
-import { Address, PotentialAddress } from '../btc/types/Address';
+import { Address } from '../btc/types/Address';
 import { OP_0 } from '../btc/contracts/OP_0';
 import { Calldata } from '../btc/universal/ABIRegistry';
 import { BytesWriter } from '../btc/buffer/BytesWriter';
@@ -15,8 +15,8 @@ export class wBTC extends OP_0 {
         super(self, owner);
     }
 
-    public callMethod(method: Selector, calldata: Calldata, _caller: PotentialAddress = null): BytesWriter {
-        return super.callMethod(method, calldata, _caller);
+    public callMethod(method: Selector, calldata: Calldata): BytesWriter {
+        return super.callMethod(method, calldata);
     }
 
     public defineSelectors(): void {
