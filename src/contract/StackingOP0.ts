@@ -16,8 +16,9 @@ import { UnstakeEvent } from './events/UnstakeEvent';
 
 export abstract class StackingOP0 extends OP_0 {
     private static readonly MINIMUM_STAKING_AMOUNT: u256 = u256.fromU32(10000); // 0.0001 WBTC
-    private static readonly MINIMUM_STAKING_DURATION: u256 = u256.fromU32(576);
-    private static readonly DURATION_MULTIPLIER: u256 = u256.fromU32(2016);
+    private static readonly MINIMUM_STAKING_DURATION: u256 = u256.fromU32(1); //576
+    private static readonly DURATION_MULTIPLIER: u256 = u256.fromU32(1); //2016
+    private static readonly MAXIMUM_DURATION_MULTIPLIER: u256 = u256.fromU32(50); // 50x reward
 
     protected readonly stakingBalances: AddressMemoryMap<Address, MemorySlotData<u256>>;
     protected readonly stakingStartBlock: AddressMemoryMap<Address, MemorySlotData<u256>>;
@@ -48,7 +49,7 @@ export abstract class StackingOP0 extends OP_0 {
     }
 
     public stake(callData: Calldata): BytesWriter {
-        const staker: Address = callData.readAddress();
+        const staker: Address = Blockchain.callee();
         const amount: u256 = callData.readU256();
 
         if (amount < StackingOP0.MINIMUM_STAKING_AMOUNT) {
@@ -81,8 +82,8 @@ export abstract class StackingOP0 extends OP_0 {
         return this.response;
     }
 
-    public claim(callData: Calldata): BytesWriter {
-        const staker: Address = callData.readAddress();
+    public claim(): BytesWriter {
+        const staker: Address = Blockchain.callee();
 
         const success = this.claimReward(staker);
         if (!success) {
@@ -93,8 +94,8 @@ export abstract class StackingOP0 extends OP_0 {
         return this.response;
     }
 
-    public unstake(callData: Calldata): BytesWriter {
-        const staker: Address = callData.readAddress();
+    public unstake(): BytesWriter {
+        const staker: Address = Blockchain.callee();
 
         const amount: u256 = this.stakingBalances.get(staker);
         if (amount.isZero()) {
@@ -110,7 +111,7 @@ export abstract class StackingOP0 extends OP_0 {
         this.claimReward(staker);
 
         // Transfer WBTC from contract to staker
-        const success = this._transfer(staker, amount);
+        const success = this._unsafeTransferFrom(this.address, staker, amount);
         if (!success) {
             throw new Revert('Transfer failed');
         }
@@ -141,6 +142,8 @@ export abstract class StackingOP0 extends OP_0 {
 
             this._mint(key, value);
         }
+
+        this._mint(this.address, stackingReward);
 
         // @ts-ignore
         this._rewardPool += stackingReward;
@@ -207,7 +210,10 @@ export abstract class StackingOP0 extends OP_0 {
                 return this.stake(calldata);
             }
             case encodeSelector('unstake'): {
-                return this.unstake(calldata);
+                return this.unstake();
+            }
+            case encodeSelector('claim'): {
+                return this.claim();
             }
             case encodeSelector('stakedAmount'): {
                 return this.stakedAmount(calldata);
@@ -244,6 +250,7 @@ export abstract class StackingOP0 extends OP_0 {
         this.defineMethodSelector('unstake', true);
         this.defineMethodSelector('stakedAmount', false);
         this.defineMethodSelector('stakedReward', false);
+        this.defineMethodSelector('claim', true);
 
         this.defineGetterSelector('rewardPool', false);
         this.defineGetterSelector('totalStaked', false);
@@ -261,8 +268,12 @@ export abstract class StackingOP0 extends OP_0 {
         }
 
         const currentStaked: u256 = this.stakingBalances.get(staker);
-        const reward: u256 = this.calculateReward(currentStaked, duration);
-        if (reward <= u256.Zero && reward > this.rewardPool) {
+        let reward: u256 = this.calculateReward(currentStaked, duration);
+        if (reward > this.rewardPool) {
+            reward = this.rewardPool;
+        }
+
+        if (reward <= u256.Zero) {
             return false;
         }
 
@@ -275,7 +286,7 @@ export abstract class StackingOP0 extends OP_0 {
         }
 
         // Transfer reward from contract to staker
-        const success = this._transfer(staker, reward);
+        const success = this._unsafeTransferFrom(this.address, staker, reward);
         if (!success) {
             return false;
         }
@@ -295,7 +306,10 @@ export abstract class StackingOP0 extends OP_0 {
         if (this.totalStaked.isZero()) return u256.Zero;
 
         const stakeProportion: u256 = SafeMath.div(stakedAmount, this.totalStaked);
-        const durationMultiplier: u256 = SafeMath.div(stakedDuration, StackingOP0.DURATION_MULTIPLIER);
+        let durationMultiplier: u256 = SafeMath.div(stakedDuration, StackingOP0.DURATION_MULTIPLIER);
+        if (durationMultiplier > StackingOP0.MAXIMUM_DURATION_MULTIPLIER) {
+            durationMultiplier = StackingOP0.MAXIMUM_DURATION_MULTIPLIER;
+        }
 
         return SafeMath.mul(SafeMath.mul(this.rewardPool, stakeProportion), durationMultiplier);
     }
