@@ -82,7 +82,7 @@ export abstract class StackingOP0 extends OP_0 {
         return this.response;
     }
 
-    public claim(callData: Calldata): BytesWriter {
+    public claim(): BytesWriter {
         const staker: Address = Blockchain.callee();
 
         const success = this.claimReward(staker);
@@ -94,8 +94,8 @@ export abstract class StackingOP0 extends OP_0 {
         return this.response;
     }
 
-    public unstake(callData: Calldata): BytesWriter {
-        const staker: Address = callData.readAddress();
+    public unstake(): BytesWriter {
+        const staker: Address = Blockchain.callee();
 
         const amount: u256 = this.stakingBalances.get(staker);
         if (amount.isZero()) {
@@ -111,7 +111,7 @@ export abstract class StackingOP0 extends OP_0 {
         this.claimReward(staker);
 
         // Transfer WBTC from contract to staker
-        const success = this._transfer(staker, amount);
+        const success = this._unsafeTransferFrom(this.address, staker, amount);
         if (!success) {
             throw new Revert('Transfer failed');
         }
@@ -142,6 +142,8 @@ export abstract class StackingOP0 extends OP_0 {
 
             this._mint(key, value);
         }
+
+        this._mint(this.address, stackingReward);
 
         // @ts-ignore
         this._rewardPool += stackingReward;
@@ -208,7 +210,10 @@ export abstract class StackingOP0 extends OP_0 {
                 return this.stake(calldata);
             }
             case encodeSelector('unstake'): {
-                return this.unstake(calldata);
+                return this.unstake();
+            }
+            case encodeSelector('claim'): {
+                return this.claim();
             }
             case encodeSelector('stakedAmount'): {
                 return this.stakedAmount(calldata);
@@ -245,6 +250,7 @@ export abstract class StackingOP0 extends OP_0 {
         this.defineMethodSelector('unstake', true);
         this.defineMethodSelector('stakedAmount', false);
         this.defineMethodSelector('stakedReward', false);
+        this.defineMethodSelector('claim', true);
 
         this.defineGetterSelector('rewardPool', false);
         this.defineGetterSelector('totalStaked', false);
@@ -280,7 +286,7 @@ export abstract class StackingOP0 extends OP_0 {
         }
 
         // Transfer reward from contract to staker
-        const success = this._transfer(staker, reward);
+        const success = this._unsafeTransferFrom(this.address, staker, reward);
         if (!success) {
             return false;
         }

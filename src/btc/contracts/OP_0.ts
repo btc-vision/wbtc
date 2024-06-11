@@ -237,7 +237,6 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
         this.onlyOwner(caller);
 
         if (caller !== callee) throw new Revert(`callee != caller`);
-        if (this.isSelf(caller)) throw new Revert('Reentrancy.');
         if (callee !== this.owner) throw new Revert('Only indexers can mint tokens');
 
         if (!this.balanceOfMap.has(to)) {
@@ -292,30 +291,13 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
         return true;
     }
 
-    protected _transferFrom(from: Address, to: Address, value: u256): boolean {
-        if (!this.allowanceMap.has(from)) throw new Revert();
-
-        const callee = Blockchain.caller();
-
-        const fromAllowanceMap = this.allowanceMap.get(from);
-        const allowed: u256 = fromAllowanceMap.get(callee);
-        if (allowed < value) throw new Revert(`Insufficient allowance`);
-
-        if (this.isSelf(callee)) throw new Revert('Can not transfer from self account');
-
-        const senderMap = this.allowanceMap.get(from);
-        if (!senderMap.has(callee)) throw new Revert();
-
-        const allowance: u256 = senderMap.get(callee);
-        if (allowance < value) throw new Revert(`Insufficient allowance`);
-
+    @unsafe
+    protected _unsafeTransferFrom(from: Address, to: Address, value: u256): boolean {
         const balance: u256 = this.balanceOfMap.get(from);
-        if (balance < value) throw new Revert(`Insufficient balance`);
+        if (balance < value) throw new Revert(`TransferFrom insufficient balance of ${from} is ${balance} and value is ${value}`);
 
-        const newAllowance: u256 = SafeMath.sub(allowance, value);
         const newBalance: u256 = SafeMath.sub(balance, value);
 
-        senderMap.set(callee, newAllowance);
         this.balanceOfMap.set(from, newBalance);
 
         if (!this.balanceOfMap.has(to)) {
@@ -328,6 +310,34 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
         }
 
         this.createTransferEvent(from, to, value);
+
+        return true;
+    }
+
+    protected _transferFrom(from: Address, to: Address, value: u256): boolean {
+        if (!this.allowanceMap.has(from)) throw new Revert();
+
+        const spender = Blockchain.callee();
+        if (Blockchain.caller() !== from) {
+            throw new Revert('Not caller.');
+        }
+
+        const fromAllowanceMap = this.allowanceMap.get(from);
+        const allowed: u256 = fromAllowanceMap.get(spender);
+        if (allowed < value) throw new Revert(`Insufficient allowance`);
+
+        if (this.isSelf(spender)) throw new Revert('Can not transfer from self account');
+
+        const senderMap = this.allowanceMap.get(from);
+        if (!senderMap.has(spender)) throw new Revert();
+
+        const allowance: u256 = senderMap.get(spender);
+        if (allowance < value) throw new Revert(`Insufficient allowance`);
+
+        const newAllowance: u256 = SafeMath.sub(allowance, value);
+        senderMap.set(spender, newAllowance);
+
+        this._unsafeTransferFrom(from, to, value);
 
         return true;
     }
