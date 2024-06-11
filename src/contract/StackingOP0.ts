@@ -16,8 +16,9 @@ import { UnstakeEvent } from './events/UnstakeEvent';
 
 export abstract class StackingOP0 extends OP_0 {
     private static readonly MINIMUM_STAKING_AMOUNT: u256 = u256.fromU32(10000); // 0.0001 WBTC
-    private static readonly MINIMUM_STAKING_DURATION: u256 = u256.fromU32(576);
-    private static readonly DURATION_MULTIPLIER: u256 = u256.fromU32(2016);
+    private static readonly MINIMUM_STAKING_DURATION: u256 = u256.fromU32(1); //576
+    private static readonly DURATION_MULTIPLIER: u256 = u256.fromU32(1); //2016
+    private static readonly MAXIMUM_DURATION_MULTIPLIER: u256 = u256.fromU32(50); // 50x reward
 
     protected readonly stakingBalances: AddressMemoryMap<Address, MemorySlotData<u256>>;
     protected readonly stakingStartBlock: AddressMemoryMap<Address, MemorySlotData<u256>>;
@@ -48,7 +49,7 @@ export abstract class StackingOP0 extends OP_0 {
     }
 
     public stake(callData: Calldata): BytesWriter {
-        const staker: Address = callData.readAddress();
+        const staker: Address = Blockchain.callee();
         const amount: u256 = callData.readU256();
 
         if (amount < StackingOP0.MINIMUM_STAKING_AMOUNT) {
@@ -82,7 +83,7 @@ export abstract class StackingOP0 extends OP_0 {
     }
 
     public claim(callData: Calldata): BytesWriter {
-        const staker: Address = callData.readAddress();
+        const staker: Address = Blockchain.callee();
 
         const success = this.claimReward(staker);
         if (!success) {
@@ -299,7 +300,10 @@ export abstract class StackingOP0 extends OP_0 {
         if (this.totalStaked.isZero()) return u256.Zero;
 
         const stakeProportion: u256 = SafeMath.div(stakedAmount, this.totalStaked);
-        const durationMultiplier: u256 = SafeMath.div(stakedDuration, StackingOP0.DURATION_MULTIPLIER);
+        let durationMultiplier: u256 = SafeMath.div(stakedDuration, StackingOP0.DURATION_MULTIPLIER);
+        if (durationMultiplier > StackingOP0.MAXIMUM_DURATION_MULTIPLIER) {
+            durationMultiplier = StackingOP0.MAXIMUM_DURATION_MULTIPLIER;
+        }
 
         return SafeMath.mul(SafeMath.mul(this.rewardPool, stakeProportion), durationMultiplier);
     }

@@ -4,7 +4,7 @@ import { u256 } from 'as-bignum/assembly';
 
 export class StakeEvent extends NetEvent {
     constructor(amount: u256) {
-        const data: BytesWriter = new BytesWriter();
+        const data: BytesWriter = new BytesWriter(1, true);
         data.writeU256(amount);
 
         super('Stake', data);

@@ -259,15 +259,13 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
     }
 
     protected _transfer(to: string, value: u256): boolean {
-        const caller = Blockchain.caller();
-        const callee = Blockchain.callee();
+        const caller = Blockchain.callee();
 
-        if (caller !== callee) throw new Revert(`callee != caller`);
         if (!this.balanceOfMap.has(caller)) throw new Revert();
         if (this.isSelf(caller)) throw new Revert('Can not transfer from self account');
 
         if (caller === to) {
-            throw new Revert(`Cannot transfer tokens.`);
+            throw new Revert(`Cannot transfer to self`);
         }
 
         if (u256.eq(value, u256.Zero)) {
