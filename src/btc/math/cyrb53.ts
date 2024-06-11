@@ -1,4 +1,4 @@
-export function cyrb53(str: string, seed: i32 = 0): f64 {
+export function cyrb53(str: string, seed: i32 = 0): i64 {
     let h1: i32 = 0xdeadbeef ^ seed;
     let h2: i32 = 0x41c6ce57 ^ seed;
     for (let i: i32 = 0; i < str.length; i++) {
@@ -6,11 +6,11 @@ export function cyrb53(str: string, seed: i32 = 0): f64 {
         h1 = (h1 ^ ch) * 2654435761;
         h2 = (h2 ^ ch) * 1597334677;
     }
-
+    
     h1 = ((h1 ^ (h1 >>> 16)) * 2246822507) ^ ((h2 ^ (h2 >>> 13)) * 3266489909);
     h2 = ((h2 ^ (h2 >>> 16)) * 2246822507) ^ ((h1 ^ (h1 >>> 13)) * 3266489909);
 
-    return 4294967296.0 * f64((2097151 & h2) >>> 0) + f64(h1 >>> 0);
+    return 4294967296.0 * i64((2097151 & h2) >>> 0) + i64(h1 >>> 0);
 }
 
 export function imul64(a: u64, b: u64): u64 {

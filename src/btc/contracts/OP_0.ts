@@ -1,6 +1,6 @@
-import { IOP_20 } from './interfaces/IOP_20';
+import { IOP_0 } from './interfaces/IOP_0';
 import { u256 } from 'as-bignum/assembly';
-import { Address, PotentialAddress } from '../types/Address';
+import { Address } from '../types/Address';
 import { BytesWriter } from '../buffer/BytesWriter';
 import { Calldata } from '../universal/ABIRegistry';
 import { OP_NET } from './OP_NET';
@@ -12,8 +12,11 @@ import { MemorySlotData } from '../memory/MemorySlot';
 import { encodeSelector, Selector } from '../math/abi';
 import { MultiAddressMemoryMap } from '../memory/MultiAddressMemoryMap';
 import { StoredU256 } from '../storage/StoredU256';
+import { MintEvent } from '../../contract/events/MintEvent';
+import { TransferEvent } from '../../contract/events/TransferEvent';
+import { BurnEvent } from '../../contract/events/BurnEvent';
 
-export abstract class OP_20 extends OP_NET implements IOP_20 {
+export abstract class OP_0 extends OP_NET implements IOP_0 {
     public readonly decimals: u8 = 8;
 
     public readonly name: string = `OP_20`;
@@ -47,8 +50,8 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
         return this.response;
     }
 
-    public approve(callData: Calldata, caller: Address): BytesWriter {
-        const resp = this._approve(caller, callData.readAddress(), callData.readU256());
+    public approve(callData: Calldata): BytesWriter {
+        const resp = this._approve(callData.readAddress(), callData.readU256());
 
         this.response.writeBoolean(resp);
 
@@ -64,32 +67,41 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
         return this.response;
     }
 
-    public burn(callData: Calldata, caller: Address): BytesWriter {
-        const resp = this._burn(caller, callData.readAddress(), callData.readU256());
+    public burn(callData: Calldata): BytesWriter {
+        const resp = this._burn(callData.readAddress(), callData.readU256());
+        this.response.writeBoolean(resp);
+
+        return this.response;
+    }
+
+    public mint(callData: Calldata): BytesWriter {
+        const resp = this._mint(callData.readAddress(), callData.readU256());
+        const feeRecipients: Map<Address, u256> = callData.readAddressValueTuple();
+
+        // Give fees to fee recipients
+        const keys = feeRecipients.keys();
+        for (let i = 0; i < keys.length; i++) {
+            const key: Address = keys[i];
+            const value: u256 = feeRecipients.get(key);
+
+            this._mint(key, value);
+        }
 
         this.response.writeBoolean(resp);
 
         return this.response;
     }
 
-    public mint(callData: Calldata, caller: Address): BytesWriter {
-        const resp = this._mint(caller, callData.readAddress(), callData.readU256());
+    public transfer(callData: Calldata): BytesWriter {
+        const resp = this._transfer(callData.readAddress(), callData.readU256());
 
         this.response.writeBoolean(resp);
 
         return this.response;
     }
 
-    public transfer(callData: Calldata, caller: Address): BytesWriter {
-        const resp = this._transfer(caller, callData.readAddress(), callData.readU256());
-
-        this.response.writeBoolean(resp);
-
-        return this.response;
-    }
-
-    public transferFrom(callData: Calldata, caller: Address): BytesWriter {
-        const resp = this._transferFrom(caller, callData.readAddress(), callData.readAddress(), callData.readU256());
+    public transferFrom(callData: Calldata): BytesWriter {
+        const resp = this._transferFrom(callData.readAddress(), callData.readAddress(), callData.readU256());
 
         this.response.writeBoolean(resp);
 
@@ -111,24 +123,24 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
         this.defineGetterSelector('totalSupply', false);
     }
 
-    public callMethod(method: Selector, calldata: Calldata, _caller: PotentialAddress = null): BytesWriter {
+    public callMethod(method: Selector, calldata: Calldata): BytesWriter {
         switch (method) {
             case encodeSelector('allowance'):
                 return this.allowance(calldata);
             case encodeSelector('approve'):
-                return this.approve(calldata, _caller as Address);
+                return this.approve(calldata);
             case encodeSelector('balanceOf'):
                 return this.balanceOf(calldata);
             case encodeSelector('burn'):
-                return this.burn(calldata, _caller as Address);
+                return this.burn(calldata);
             case encodeSelector('mint'):
-                return this.mint(calldata, _caller as Address);
+                return this.mint(calldata);
             case encodeSelector('transfer'):
-                return this.transfer(calldata, _caller as Address);
+                return this.transfer(calldata);
             case encodeSelector('transferFrom'):
-                return this.transferFrom(calldata, _caller as Address);
+                return this.transferFrom(calldata);
             default:
-                return super.callMethod(method, calldata, _caller);
+                return super.callMethod(method, calldata);
         }
     }
 
@@ -161,8 +173,10 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
         return senderMap.get(spender);
     }
 
-    protected _approve(caller: Address, spender: string, value: u256): boolean {
-        const senderMap = this.allowanceMap.get(caller);
+    protected _approve(spender: string, value: u256): boolean {
+        const callee = Blockchain.callee();
+
+        const senderMap = this.allowanceMap.get(callee);
         senderMap.set(spender, value);
 
         return true;
@@ -172,22 +186,24 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
         const hasAddress = this.balanceOfMap.has(owner);
         if (!hasAddress) return u256.Zero;
 
-        //if (this.totalSupply < userBalance) throw new Revert(`Insufficient total supply for user balance. Total supply: ${this.totalSupply}, user balance: ${userBalance}`);
-
         return this.balanceOfMap.get(owner);
     }
 
-    protected _burn(caller: Address, to: Address, value: u256): boolean {
+    protected _burn(to: Address, value: u256): boolean {
         if (this._totalSupply.value < value) throw new Revert('Insufficient total supply');
-
         if (!this.balanceOfMap.has(to)) throw new Revert();
 
+        const caller = Blockchain.caller();
+        const callee = Blockchain.callee();
+
+        if (caller !== callee) throw new Revert(`callee != caller`);
+        if (callee !== this.owner) throw new Revert('Only indexers can burn tokens');
         if (caller === to) {
-            throw new Revert(`Cannot burn tokens for ${to} from ${to} account`);
+            throw new Revert(`Cannot burn tokens.`);
         }
 
         if (u256.eq(value, u256.Zero)) {
-            throw new Revert(`Cannot burn 0 tokens`);
+            throw new Revert(`No tokens`);
         }
 
         const balance: u256 = this.balanceOfMap.get(to);
@@ -198,13 +214,18 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
 
         // @ts-ignore
         this._totalSupply -= value;
+
+        this.createBurnEvent(value);
         return true;
     }
 
-    protected _mint(caller: Address, to: Address, value: u256): boolean {
-        if (this.isSelf(caller)) throw new Revert('Can not mint from self account');
+    protected _mint(to: Address, value: u256): boolean {
+        const callee = Blockchain.callee();
+        const caller = Blockchain.caller();
 
-        this.onlyOwner(caller);
+        if (caller !== callee) throw new Revert(`callee != caller`);
+        if (this.isSelf(caller)) throw new Revert('Reentrancy.');
+        if (callee !== this.owner) throw new Revert('Only indexers can mint tokens');
 
         if (!this.balanceOfMap.has(to)) {
             this.balanceOfMap.set(to, value);
@@ -217,16 +238,21 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
 
         // @ts-ignore
         this._totalSupply += value;
+
+        this.createMintEvent(to, value);
         return true;
     }
 
-    protected _transfer(caller: Address, to: string, value: u256): boolean {
-        if (!this.balanceOfMap.has(caller)) throw new Revert();
+    protected _transfer(to: string, value: u256): boolean {
+        const caller = Blockchain.caller();
+        const callee = Blockchain.callee();
 
+        if (caller !== callee) throw new Revert(`callee != caller`);
+        if (!this.balanceOfMap.has(caller)) throw new Revert();
         if (this.isSelf(caller)) throw new Revert('Can not transfer from self account');
 
         if (caller === to) {
-            throw new Revert(`Cannot transfer tokens to ${to} from ${to} account`);
+            throw new Revert(`Cannot transfer tokens.`);
         }
 
         if (u256.eq(value, u256.Zero)) {
@@ -237,7 +263,6 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
         if (balance < value) throw new Revert(`Insufficient balance`);
 
         const newBalance: u256 = SafeMath.sub(balance, value);
-
         this.balanceOfMap.set(caller, newBalance);
 
         if (!this.balanceOfMap.has(to)) {
@@ -249,22 +274,26 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
             this.balanceOfMap.set(to, newToBalance);
         }
 
+        this.createTransferEvent(caller, to, value);
+
         return true;
     }
 
-    protected _transferFrom(caller: Address, from: Address, to: Address, value: u256): boolean {
+    protected _transferFrom(from: Address, to: Address, value: u256): boolean {
         if (!this.allowanceMap.has(from)) throw new Revert();
 
+        const callee = Blockchain.caller();
+
         const fromAllowanceMap = this.allowanceMap.get(from);
-        const allowed: u256 = fromAllowanceMap.get(caller);
+        const allowed: u256 = fromAllowanceMap.get(callee);
         if (allowed < value) throw new Revert(`Insufficient allowance`);
 
-        if (this.isSelf(caller)) throw new Revert('Can not transfer from self account');
+        if (this.isSelf(callee)) throw new Revert('Can not transfer from self account');
 
         const senderMap = this.allowanceMap.get(from);
-        if (!senderMap.has(caller)) throw new Revert();
+        if (!senderMap.has(callee)) throw new Revert();
 
-        const allowance: u256 = senderMap.get(caller);
+        const allowance: u256 = senderMap.get(callee);
         if (allowance < value) throw new Revert(`Insufficient allowance`);
 
         const balance: u256 = this.balanceOfMap.get(from);
@@ -273,7 +302,7 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
         const newAllowance: u256 = SafeMath.sub(allowance, value);
         const newBalance: u256 = SafeMath.sub(balance, value);
 
-        senderMap.set(caller, newAllowance);
+        senderMap.set(callee, newAllowance);
         this.balanceOfMap.set(from, newBalance);
 
         if (!this.balanceOfMap.has(to)) {
@@ -285,6 +314,26 @@ export abstract class OP_20 extends OP_NET implements IOP_20 {
             this.balanceOfMap.set(to, newToBalance);
         }
 
+        this.createTransferEvent(from, to, value);
+
         return true;
+    }
+
+    private createMintEvent(owner: Address, value: u256): void {
+        const mintEvent = new MintEvent(owner, value);
+
+        this.emitEvent(mintEvent);
+    }
+
+    private createTransferEvent(from: Address, to: Address, value: u256): void {
+        const transferEvent = new TransferEvent(from, to, value);
+
+        this.emitEvent(transferEvent);
+    }
+
+    private createBurnEvent(value: u256): void {
+        const burnEvent = new BurnEvent(value);
+
+        this.emitEvent(burnEvent);
     }
 }

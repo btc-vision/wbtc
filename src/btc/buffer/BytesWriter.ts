@@ -7,6 +7,7 @@ import { MemorySlotPointer } from '../memory/MemorySlotPointer';
 import { MemorySlotData } from '../memory/MemorySlot';
 import { BlockchainStorage, PointerStorage } from '../env/BTCEnvironment';
 import { cyrb53a } from '../math/cyrb53';
+import { Revert } from '../types/Revert';
 
 export enum BufferDataType {
     U8 = 0,
@@ -173,6 +174,41 @@ export class BytesWriter {
         }
     }
 
+    public writeAddressValueTupleMap(map: Map<Address, u256>): void {
+        if (map.size > 65535) throw new Revert('Map size is too large');
+        this.writeU16(u16(map.size));
+
+        const keys = map.keys();
+        for (let i = 0; i < keys.length; i++) {
+            const key: Address = keys[i];
+            const value: u256 = map.get(key);
+
+            this.writeAddress(key);
+            this.writeU256(value);
+        }
+    }
+
+    public writeLimitedAddressBytesMap(map: Map<Address, Uint8Array[]>): void {
+        if (map.size > 8) throw new Revert('Too many contract called.'); // no more than 8 different contracts.
+
+        this.writeU8(u8(map.size));
+
+        const keys: Address[] = map.keys();
+        for (let i: i32 = 0; i < keys.length; i++) {
+            const address: Address = keys[i];
+            const calls: Uint8Array[] = map.get(address);
+
+            if (calls.length > 10) throw new Revert('Too many calls.'); // no more than 16 different calls.
+
+            this.writeAddress(address);
+            this.writeU8(u8(calls.length));
+
+            for (let j: i32 = 0; j < calls.length; j++) {
+                this.writeBytesWithLength(calls[j]);
+            }
+        }
+    }
+
     public writeMethodSelectorsMap(map: MethodMap): void {
         this.writeU16(u16(map.size));
 
@@ -268,7 +304,7 @@ export class BytesWriter {
 
     private fromAddress(value: Address): Uint8Array {
         if (value.length > i32(ADDRESS_BYTE_LENGTH)) {
-            throw new Error('Address is too long');
+            throw new Revert('Address is too long');
         }
 
         const bytes: Uint8Array = new Uint8Array(ADDRESS_BYTE_LENGTH);

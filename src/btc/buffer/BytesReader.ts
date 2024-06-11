@@ -1,6 +1,7 @@
 import { Address, ADDRESS_BYTE_LENGTH } from '../types/Address';
 import { Selector } from '../math/abi';
 import { u256 } from 'as-bignum/assembly';
+import { Revert } from '../types/Revert';
 
 @final
 export class BytesReader {
@@ -80,6 +81,36 @@ export class BytesReader {
         return bytes;
     }
 
+    public readMultiBytesAddressMap(): Map<Address, Uint8Array[]> {
+        const map: Map<Address, Uint8Array[]> = new Map<Address, Uint8Array[]>();
+        const size: u8 = this.readU8();
+
+        if (size > 8) throw new Revert('Too many contract called.');
+
+        for (let i: u8 = 0; i < size; i++) {
+            const address: Address = this.readAddress();
+            const responseSize: u8 = this.readU8();
+
+            if (responseSize > 10) throw new Revert('Too many calls.');
+
+            const calls: Uint8Array[] = [];
+            for (let j: u8 = 0; j < responseSize; j++) {
+                const response: Uint8Array = this.readBytesWithLength();
+                calls.push(response);
+            }
+
+            map.set(address, calls);
+        }
+
+        return map;
+    }
+
+    public readBytesWithLength(): Uint8Array {
+        const length = this.readU32();
+
+        return this.readBytes(length);
+    }
+
     public readString(length: u16): string {
         const bytes = this.readBytes(length, true);
 
@@ -92,6 +123,22 @@ export class BytesReader {
 
         for (let i = 0; i < length; i++) {
             result[i] = this.readU256();
+        }
+
+        return result;
+    }
+
+    public readAddressValueTuple(): Map<Address, u256> {
+        const length: u16 = this.readU16();
+        const result = new Map<Address, u256>();
+
+        for (let i: u16 = 0; i < length; i++) {
+            const address = this.readAddress();
+            const value = this.readU256();
+
+            if (result.has(address)) throw new Revert('Duplicate address found in map');
+
+            result.set(address, value);
         }
 
         return result;
@@ -114,13 +161,6 @@ export class BytesReader {
     public readFloat(): f32 {
         const value = this.buffer.getFloat32(this.currentOffset, true);
         this.currentOffset += 4;
-
-        return value;
-    }
-
-    public readDouble(): f64 {
-        const value = this.buffer.getFloat64(this.currentOffset, true);
-        this.currentOffset += 8;
 
         return value;
     }

@@ -1,5 +1,5 @@
 import { IBTC } from '../interfaces/IBTC';
-import { Address, PotentialAddress } from '../types/Address';
+import { Address } from '../types/Address';
 import { Blockchain } from '../env';
 import { ABIRegistry, Calldata } from '../universal/ABIRegistry';
 import { BytesWriter } from '../buffer/BytesWriter';
@@ -20,10 +20,6 @@ export abstract class OP_NET implements IBTC {
 
         if (!owner) {
             throw new Revert('NO CONTRACT INITIALIZER FOUND.');
-        }
-
-        if (Blockchain.hasContract(contractAddress)) {
-            throw new Revert('CONTRACT ALREADY EXISTS.');
         }
 
         this._owner = owner;
@@ -50,7 +46,7 @@ export abstract class OP_NET implements IBTC {
 
     public abstract defineSelectors(): void;
 
-    public callMethod(method: Selector, calldata: Calldata, _caller: PotentialAddress = null): BytesWriter {
+    public callMethod(method: Selector, calldata: Calldata): BytesWriter {
         switch (method) {
             case encodeSelector('isAddressOwner'):
                 return this.isAddressOwner(calldata);
@@ -98,10 +94,6 @@ export abstract class OP_NET implements IBTC {
 
     protected defineMethodSelector(name: string, canWrite: boolean): void {
         ABIRegistry.defineMethodSelector(this, name, canWrite);
-    }
-
-    protected call(contract: Address, method: Selector, calldata: Calldata): void {
-        Blockchain.call(this, contract, method, calldata);
     }
 
     private isAddressOwner(calldata: Calldata): BytesWriter {

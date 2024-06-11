@@ -1,14 +1,15 @@
-import { Address } from '../types/Address';
-import { OP_NET } from '../contracts/OP_NET';
+import { Address, PotentialAddress } from '../types/Address';
 import { MemorySlotPointer } from '../memory/MemorySlotPointer';
 import { MemorySlotData } from '../memory/MemorySlot';
 import { u256 } from 'as-bignum/assembly';
 import { ContractDefaults } from '../lang/ContractDefaults';
-import { ABIRegistry, Calldata } from '../universal/ABIRegistry';
+import { ABIRegistry } from '../universal/ABIRegistry';
 import { BytesReader } from '../buffer/BytesReader';
-import { encodePointerHash, Selector } from '../math/abi';
+import { encodePointerHash } from '../math/abi';
 import { BytesWriter } from '../buffer/BytesWriter';
 import { MAX_EVENTS, NetEvent } from '../events/NetEvent';
+import { Potential } from '../lang/Definitions';
+import { OP_NET } from '../contracts/OP_NET';
 
 export type PointerStorage = Map<MemorySlotPointer, MemorySlotData<u256>>;
 export type BlockchainStorage = Map<Address, PointerStorage>;
@@ -21,10 +22,17 @@ export class BlockchainEnvironment {
 
     private storage: BlockchainStorage = new Map();
     private initializedStorage: BlockchainStorage = new Map();
-    private contracts: Map<Address, OP_NET> = new Map();
+
+    private externalCalls: Map<Address, Uint8Array[]> = new Map();
+    private externalCallsResponse: Map<Address, Uint8Array[]> = new Map();
 
     private defaults: ContractDefaults = new ContractDefaults();
     private events: NetEvent[] = [];
+
+    private _callee: PotentialAddress = null;
+    private _caller: PotentialAddress = null;
+
+    private contract: OP_NET | null = null;
 
     constructor() {
     }
@@ -35,11 +43,38 @@ export class BlockchainEnvironment {
         }
     }
 
+    public setContract(contract: OP_NET): void {
+        if (this.contract !== null) {
+            throw this.error('Contract already set');
+        }
+
+        this.contract = contract;
+    }
+
     public purgeMemory(): void {
         this.storage.clear();
         this.initializedStorage.clear();
 
         this.events = [];
+
+        this.externalCallsResponse.clear();
+        this.externalCalls.clear();
+    }
+
+    public callee(): Address {
+        if (!this._callee) {
+            throw this.error('Callee is required');
+        }
+
+        return this._callee as Address;
+    }
+
+    public caller(): Address {
+        if (!this._caller) {
+            throw this.error('Caller is required');
+        }
+
+        return this._caller as Address;
     }
 
     public init(owner: Address, contractAddress: Address): void {
@@ -48,34 +83,67 @@ export class BlockchainEnvironment {
         }
 
         this.defaults.loadContractDefaults(owner, contractAddress);
-
         this.isInitialized = true;
 
         return;
+    }
+
+    public setEnvironment(data: Uint8Array): void {
+        const reader: BytesReader = new BytesReader(data);
+
+        const caller: Address = reader.readAddress();
+        const callee: Address = reader.readAddress();
+
+        this._caller = caller;
+        this._callee = callee;
     }
 
     public getDefaults(): ContractDefaults {
         return this.defaults;
     }
 
-    public call(self: OP_NET, destinationContract: Address, method: Selector, calldata: Calldata): BytesReader {
-        const contract: OP_NET = this.contracts.get(destinationContract);
-        if (!contract) {
-            throw this.error(`Contract not found for address ${destinationContract}`);
+    public call(destinationContract: Address, calldata: BytesWriter): BytesReader {
+        if (!this.isInitialized) {
+            throw this.error('Not initialized');
         }
 
-        const methodToCall: OP_NET | null = ABIRegistry.hasMethodByContract(contract, method);
-        if (!methodToCall) {
-            throw this.error(`Method not found for selector ${method}`);
+        if (destinationContract === this._callee) {
+            throw this.error('Cannot call self');
         }
 
-        const result: BytesWriter = methodToCall.callMethod(method, calldata, self.address);
+        if (!this.externalCalls.has(destinationContract)) {
+            this.externalCalls.set(destinationContract, []);
+        }
 
-        return result.toBytesReader();
+        const externalCalls = this.externalCalls.get(destinationContract);
+        const buffer = calldata.getBuffer();
+        externalCalls.push(buffer);
+
+        const response: Potential<Uint8Array> = this.getExternalCallResponse(destinationContract, externalCalls.length - 1);
+        if (!response) {
+            throw this.error('external call failed');
+        }
+
+        return new BytesReader(response);
+    }
+
+    public getCalls(): Uint8Array {
+        const buffer: BytesWriter = new BytesWriter();
+
+        buffer.writeLimitedAddressBytesMap(this.externalCalls);
+        this.externalCalls.clear();
+
+        return buffer.getBuffer();
+    }
+
+    public loadCallsResponse(responses: Uint8Array): void {
+        const memoryReader: BytesReader = new BytesReader(responses);
+
+        this.externalCallsResponse = memoryReader.readMultiBytesAddressMap();
     }
 
     public addEvent(event: NetEvent): void {
-        if (this.events.length >= MAX_EVENTS) {
+        if (this.events.length >= i32(MAX_EVENTS)) {
             throw this.error(`Too many events in the same transaction.`);
         }
 
@@ -142,29 +210,6 @@ export class BlockchainEnvironment {
         this._internalSetStorageAt(address, pointerHash, value);
     }
 
-    public setContract(address: Address, contract: OP_NET): void {
-        this.contracts.set(address, contract);
-    }
-
-    public hasContract(address: Address): bool {
-        return this.contracts.has(address);
-    }
-
-    public getContract(address: Address): OP_NET {
-        if (!this.contracts.has(address)) throw this.error(`Contract not found for address ${address}`);
-
-        return this.contracts.get(address);
-    }
-
-    public requireInitialStorage(address: Address, pointerHash: u256, defaultValue: u256): void {
-        if (!this.initializedStorage.has(address)) {
-            this.initializedStorage.set(address, new Map<u256, MemorySlotData<u256>>());
-        }
-
-        const storage = this.initializedStorage.get(address);
-        storage.set(pointerHash, defaultValue);
-    }
-
     public getViewSelectors(): Uint8Array {
         return ABIRegistry.getViewSelectors();
     }
@@ -175,14 +220,6 @@ export class BlockchainEnvironment {
 
     public getWriteMethods(): Uint8Array {
         return ABIRegistry.getWriteMethods();
-    }
-
-    public allocateMemory(num: usize): usize {
-        return __alloc(num);
-    }
-
-    public deallocateMemory(pointer: i32): void {
-        __free(pointer);
     }
 
     public loadStorage(data: Uint8Array): void {
@@ -225,6 +262,28 @@ export class BlockchainEnvironment {
         this.initializedStorage.clear();
 
         return memoryWriter.getBuffer();
+    }
+
+    private requireInitialStorage(address: Address, pointerHash: u256, defaultValue: u256): void {
+        if (!this.initializedStorage.has(address)) {
+            this.initializedStorage.set(address, new Map<u256, MemorySlotData<u256>>());
+        }
+
+        const storage = this.initializedStorage.get(address);
+        storage.set(pointerHash, defaultValue);
+    }
+
+    private getExternalCallResponse(destinationContract: Address, index: i32): Potential<Uint8Array> {
+        if (!this.isInitialized) {
+            throw this.error('Not initialized');
+        }
+
+        if (!this.externalCallsResponse.has(destinationContract)) {
+            this.externalCallsResponse.set(destinationContract, []);
+        }
+
+        const externalCallsResponse = this.externalCallsResponse.get(destinationContract);
+        return externalCallsResponse[index] || null;
     }
 
     private error(msg: string): Error {
