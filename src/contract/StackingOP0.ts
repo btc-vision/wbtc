@@ -261,8 +261,12 @@ export abstract class StackingOP0 extends OP_0 {
         }
 
         const currentStaked: u256 = this.stakingBalances.get(staker);
-        const reward: u256 = this.calculateReward(currentStaked, duration);
-        if (reward <= u256.Zero && reward > this.rewardPool) {
+        let reward: u256 = this.calculateReward(currentStaked, duration);
+        if (reward > this.rewardPool) {
+            reward = this.rewardPool;
+        }
+
+        if (reward <= u256.Zero) {
             return false;
         }
 
