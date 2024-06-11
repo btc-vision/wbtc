@@ -25,7 +25,7 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
     protected readonly allowanceMap: MultiAddressMemoryMap<Address, Address, MemorySlotData<u256>>;
     protected readonly balanceOfMap: AddressMemoryMap<Address, MemorySlotData<u256>>;
 
-    protected constructor(self: Address, owner: Address) {
+    protected constructor(self: Address, owner: Address, public readonly maxSupply: u256) {
         super(self, owner);
 
         this.allowanceMap = new MultiAddressMemoryMap<Address, Address, MemorySlotData<u256>>(1, self, u256.Zero);
@@ -121,6 +121,7 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
         this.defineGetterSelector('name', false);
         this.defineGetterSelector('symbol', false);
         this.defineGetterSelector('totalSupply', false);
+        this.defineGetterSelector('maxSupply', false);
     }
 
     public callMethod(method: Selector, calldata: Calldata): BytesWriter {
@@ -157,6 +158,9 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
                 break;
             case encodeSelector('totalSupply'):
                 this.response.writeU256(this.totalSupply);
+                break;
+            case encodeSelector('maximumSupply'):
+                this.response.writeU256(this.maxSupply);
                 break;
             default:
                 return super.callView(method);
@@ -238,6 +242,8 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
 
         // @ts-ignore
         this._totalSupply += value;
+
+        if (this._totalSupply.value > this.maxSupply) throw new Revert('Max supply reached');
 
         this.createMintEvent(to, value);
         return true;
