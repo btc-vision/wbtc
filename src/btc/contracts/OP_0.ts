@@ -15,6 +15,7 @@ import { StoredU256 } from '../storage/StoredU256';
 import { MintEvent } from '../../contract/events/MintEvent';
 import { TransferEvent } from '../../contract/events/TransferEvent';
 import { BurnEvent } from '../../contract/events/BurnEvent';
+import { ApproveEvent } from '../../contract/events/ApproveEvent';
 
 export abstract class OP_0 extends OP_NET implements IOP_0 {
     public readonly decimals: u8 = 8;
@@ -25,10 +26,18 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
     protected readonly allowanceMap: MultiAddressMemoryMap<Address, Address, MemorySlotData<u256>>;
     protected readonly balanceOfMap: AddressMemoryMap<Address, MemorySlotData<u256>>;
 
-    protected constructor(self: Address, owner: Address, public readonly maxSupply: u256) {
+    protected constructor(
+        self: Address,
+        owner: Address,
+        public readonly maxSupply: u256,
+    ) {
         super(self, owner);
 
-        this.allowanceMap = new MultiAddressMemoryMap<Address, Address, MemorySlotData<u256>>(1, self, u256.Zero);
+        this.allowanceMap = new MultiAddressMemoryMap<Address, Address, MemorySlotData<u256>>(
+            1,
+            self,
+            u256.Zero,
+        );
         this.balanceOfMap = new AddressMemoryMap<Address, MemorySlotData<u256>>(2, self, u256.Zero);
 
         const supply: u256 = Blockchain.getStorageAt(self, 3, u256.Zero, u256.Zero);
@@ -51,9 +60,13 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
     }
 
     public approve(callData: Calldata): BytesWriter {
-        const resp = this._approve(callData.readAddress(), callData.readU256());
+        const spender: Address = callData.readAddress();
+        const value = callData.readU256();
 
+        const resp = this._approve(spender, value);
         this.response.writeBoolean(resp);
+
+        this.createApproveEvent(Blockchain.callee(), spender, value);
 
         return this.response;
     }
@@ -101,7 +114,11 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
     }
 
     public transferFrom(callData: Calldata): BytesWriter {
-        const resp = this._transferFrom(callData.readAddress(), callData.readAddress(), callData.readU256());
+        const resp = this._transferFrom(
+            callData.readAddress(),
+            callData.readAddress(),
+            callData.readU256(),
+        );
 
         this.response.writeBoolean(resp);
 
@@ -227,6 +244,8 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
         const callee = Blockchain.callee();
         const caller = Blockchain.caller();
 
+        this.onlyOwner(caller);
+
         if (caller !== callee) throw new Revert(`callee != caller`);
         if (this.isSelf(caller)) throw new Revert('Reentrancy.');
         if (callee !== this.owner) throw new Revert('Only indexers can mint tokens');
@@ -323,6 +342,12 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
         this.createTransferEvent(from, to, value);
 
         return true;
+    }
+
+    private createApproveEvent(owner: Address, spender: Address, value: u256): void {
+        const approveEvent = new ApproveEvent(owner, spender, value);
+
+        this.emitEvent(approveEvent);
     }
 
     private createMintEvent(owner: Address, value: u256): void {
