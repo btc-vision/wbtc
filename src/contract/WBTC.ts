@@ -13,7 +13,9 @@ export class wBTC extends OP_0 {
     public readonly symbol: string = 'wBTC';
 
     constructor(self: Address, owner: Address) {
-        super(self, owner, u256.fromBytes([74, 155, 99, 132, 72, 128, 0]));
+        const bytes: u8[] = [74, 155, 99, 132, 72, 128, 0];
+
+        super(self, owner, u256.fromBytes(bytes));
     }
 
     public callMethod(method: Selector, calldata: Calldata): BytesWriter {
