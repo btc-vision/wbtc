@@ -33,8 +33,13 @@ export class BlockchainEnvironment {
     private _caller: PotentialAddress = null;
 
     private contract: OP_NET | null = null;
+    private currentBlock: u256 = u256.Zero;
 
     constructor() {
+    }
+
+    public get blockNumber(): u256 {
+        return this.currentBlock;
     }
 
     public requireInitialization(): void {
@@ -91,11 +96,9 @@ export class BlockchainEnvironment {
     public setEnvironment(data: Uint8Array): void {
         const reader: BytesReader = new BytesReader(data);
 
-        const caller: Address = reader.readAddress();
-        const callee: Address = reader.readAddress();
-
-        this._caller = caller;
-        this._callee = callee;
+        this._caller = reader.readAddress();
+        this._callee = reader.readAddress();
+        this.currentBlock = reader.readU256();
     }
 
     public getDefaults(): ContractDefaults {

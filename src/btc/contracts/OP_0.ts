@@ -89,16 +89,6 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
 
     public mint(callData: Calldata): BytesWriter {
         const resp = this._mint(callData.readAddress(), callData.readU256());
-        const feeRecipients: Map<Address, u256> = callData.readAddressValueTuple();
-
-        // Give fees to fee recipients
-        const keys = feeRecipients.keys();
-        for (let i = 0; i < keys.length; i++) {
-            const key: Address = keys[i];
-            const value: u256 = feeRecipients.get(key);
-
-            this._mint(key, value);
-        }
 
         this.response.writeBoolean(resp);
 
