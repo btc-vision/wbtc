@@ -81,7 +81,7 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
     }
 
     public burn(callData: Calldata): BytesWriter {
-        const resp = this._burn(callData.readAddress(), callData.readU256());
+        const resp = this._burn(callData.readU256());
         this.response.writeBoolean(resp);
 
         return this.response;
@@ -200,28 +200,24 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
         return this.balanceOfMap.get(owner);
     }
 
-    protected _burn(to: Address, value: u256): boolean {
-        if (this._totalSupply.value < value) throw new Revert('Insufficient total supply');
-        if (!this.balanceOfMap.has(to)) throw new Revert();
-
-        const caller = Blockchain.caller();
+    protected _burn(value: u256): boolean {
         const callee = Blockchain.callee();
+        const caller = Blockchain.caller();
 
-        if (caller !== callee) throw new Revert(`callee != caller`);
-        if (callee !== this.owner) throw new Revert('Only indexers can burn tokens');
-        if (caller === to) {
-            throw new Revert(`Cannot burn tokens.`);
-        }
+        this.onlyOwner(callee); // only indexers can burn tokens
+
+        if (this._totalSupply.value < value) throw new Revert('Insufficient total supply');
+        if (!this.balanceOfMap.has(caller)) throw new Revert('Empty');
 
         if (u256.eq(value, u256.Zero)) {
             throw new Revert(`No tokens`);
         }
 
-        const balance: u256 = this.balanceOfMap.get(to);
+        const balance: u256 = this.balanceOfMap.get(caller);
         if (balance < value) throw new Revert(`Insufficient balance`);
 
         const newBalance: u256 = SafeMath.sub(balance, value);
-        this.balanceOfMap.set(to, newBalance);
+        this.balanceOfMap.set(caller, newBalance);
 
         // @ts-ignore
         this._totalSupply -= value;

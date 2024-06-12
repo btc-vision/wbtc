@@ -154,7 +154,11 @@ export abstract class StackingOP0 extends OP_0 {
     }
 
     public override burn(callData: Calldata): BytesWriter {
-        const resp = this._burn(callData.readAddress(), callData.readU256());
+        const resp = this._burn(callData.readU256());
+        if (!resp) {
+            throw new Revert('Burn failed');
+        }
+
         const feeRecipients: Map<Address, u256> = callData.readAddressValueTuple();
         const stackingReward: u256 = callData.readU256();
 
