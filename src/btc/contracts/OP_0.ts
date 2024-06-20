@@ -230,7 +230,7 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
         const callee = Blockchain.callee();
         const caller = Blockchain.caller();
 
-        this.onlyOwner(caller);
+        this.onlyOwner(callee);
 
         if (caller !== callee) throw new Revert(`callee != caller`);
         if (callee !== this.owner) throw new Revert('Only indexers can mint tokens');

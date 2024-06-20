@@ -18,7 +18,7 @@ export type BlockchainStorage = Map<Address, PointerStorage>;
 export class BlockchainEnvironment {
     private static readonly runtimeException: string = 'RuntimeException';
 
-    public isInitialized: boolean = false;
+    public isInitialized: boolean = true;
 
     private storage: BlockchainStorage = new Map();
     private initializedStorage: BlockchainStorage = new Map();
@@ -40,12 +40,6 @@ export class BlockchainEnvironment {
 
     public get blockNumber(): u256 {
         return this.currentBlock;
-    }
-
-    public requireInitialization(): void {
-        if (!this.isInitialized) {
-            throw this.error('Not initialized');
-        }
     }
 
     public setContract(contract: OP_NET): void {
@@ -82,23 +76,17 @@ export class BlockchainEnvironment {
         return this._caller as Address;
     }
 
-    public init(owner: Address, contractAddress: Address): void {
-        if (this.isInitialized) {
-            throw this.error(`Already initialized`);
-        }
-
-        this.defaults.loadContractDefaults(owner, contractAddress);
-        this.isInitialized = true;
-
-        return;
-    }
-
     public setEnvironment(data: Uint8Array): void {
         const reader: BytesReader = new BytesReader(data);
 
         this._caller = reader.readAddress();
         this._callee = reader.readAddress();
         this.currentBlock = reader.readU256();
+
+        const owner = reader.readAddress();
+        const contractAddress = reader.readAddress();
+
+        this.defaults.loadContractDefaults(owner, contractAddress);
     }
 
     public getDefaults(): ContractDefaults {

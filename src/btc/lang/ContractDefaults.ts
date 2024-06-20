@@ -1,7 +1,6 @@
 import { Address } from '../types/Address';
 import { Potential } from './Definitions';
 
-
 export class ContractDefaults {
     public owner: Potential<Address> = null;
     public contractAddress: Potential<Address> = null;
@@ -11,13 +10,13 @@ export class ContractDefaults {
     constructor() {
     }
 
-    get selfAddress(): Address {
+    public get selfAddress(): Address {
         if (!this.contractAddress) throw new Error('Self address not found');
 
         return this.contractAddress as Address;
     }
 
-    get ownerAddress(): Address {
+    public get ownerAddress(): Address {
         if (!this.owner) throw new Error('Owner address not found');
 
         return this.owner as Address;

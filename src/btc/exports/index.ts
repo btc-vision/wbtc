@@ -3,12 +3,9 @@ import { Blockchain } from '../env';
 import { Selector } from '../math/abi';
 import { BytesWriter } from '../buffer/BytesWriter';
 import { OP_NET } from '../contracts/OP_NET';
-import { Address } from '../types/Address';
 import { BytesReader } from '../buffer/BytesReader';
 
 export function readMethod(method: Selector, contract: OP_NET | null, data: Uint8Array): Uint8Array {
-    Blockchain.requireInitialization();
-
     const methodToCall = ABIRegistry.hasMethodBySelector(method, contract);
     if (!methodToCall) {
         throw new Error(`Method not found for selector ${method}`);
@@ -21,8 +18,6 @@ export function readMethod(method: Selector, contract: OP_NET | null, data: Uint
 }
 
 export function readView(method: Selector, contract: OP_NET | null): Uint8Array {
-    Blockchain.requireInitialization();
-
     const methodToCall = ABIRegistry.hasSelectorForView(method, contract);
     if (!methodToCall) {
         throw new Error(`View not found for selector ${method}`);
@@ -32,61 +27,39 @@ export function readView(method: Selector, contract: OP_NET | null): Uint8Array 
     return result.getBuffer();
 }
 
-export function INIT(owner: Address, contractAddress: Address): void {
-    Blockchain.init(owner, contractAddress);
-}
-
 export function getViewABI(): Uint8Array {
-    Blockchain.requireInitialization();
-
     return Blockchain.getViewSelectors();
 }
 
 export function getEvents(): Uint8Array {
-    Blockchain.requireInitialization();
-
     return Blockchain.getEvents();
 }
 
 export function getMethodABI(): Uint8Array {
-    Blockchain.requireInitialization();
-
     return Blockchain.getMethodSelectors();
 }
 
 export function getWriteMethods(): Uint8Array {
-    Blockchain.requireInitialization();
-
     return Blockchain.getWriteMethods();
 }
 
 export function getModifiedStorage(): Uint8Array {
-    Blockchain.requireInitialization();
-
     return Blockchain.storageToBytes();
 }
 
 export function initializeStorage(): Uint8Array {
-    Blockchain.requireInitialization();
-
     return Blockchain.initializedStorageToBytes();
 }
 
 export function loadStorage(data: Uint8Array): void {
-    Blockchain.requireInitialization();
-
     Blockchain.loadStorage(data);
 }
 
 export function loadCallsResponse(data: Uint8Array): void {
-    Blockchain.requireInitialization();
-
     Blockchain.loadCallsResponse(data);
 }
 
 export function getCalls(): Uint8Array {
-    Blockchain.requireInitialization();
-
     return Blockchain.getCalls();
 }
 
@@ -95,8 +68,6 @@ export function isInitialized(): boolean {
 }
 
 export function setEnvironment(data: Uint8Array): void {
-    Blockchain.requireInitialization();
-
     Blockchain.setEnvironment(data);
 }
 
