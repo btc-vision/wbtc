@@ -2,6 +2,7 @@ import { Address, ADDRESS_BYTE_LENGTH } from '../types/Address';
 import { Selector } from '../math/abi';
 import { u256 } from 'as-bignum/assembly';
 import { Revert } from '../types/Revert';
+import { Map } from '../generic/Map';
 
 @final
 export class BytesReader {
@@ -11,14 +12,6 @@ export class BytesReader {
 
     constructor(bytes: Uint8Array) {
         this.buffer = new DataView(bytes.buffer);
-    }
-
-    public purgeBuffer(): void {
-        this.currentOffset = 0;
-
-        for (let i = 0; i < this.buffer.byteLength; i++) {
-            this.buffer.setUint8(i, 0);
-        }
     }
 
     public readU8(): u8 {

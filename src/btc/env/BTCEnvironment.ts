@@ -2,14 +2,13 @@ import { Address, PotentialAddress } from '../types/Address';
 import { MemorySlotPointer } from '../memory/MemorySlotPointer';
 import { MemorySlotData } from '../memory/MemorySlot';
 import { u256 } from 'as-bignum/assembly';
-import { ContractDefaults } from '../lang/ContractDefaults';
 import { ABIRegistry } from '../universal/ABIRegistry';
 import { BytesReader } from '../buffer/BytesReader';
 import { encodePointerHash } from '../math/abi';
 import { BytesWriter } from '../buffer/BytesWriter';
 import { MAX_EVENTS, NetEvent } from '../events/NetEvent';
 import { Potential } from '../lang/Definitions';
-import { OP_NET } from '../contracts/OP_NET';
+import { Map } from '../generic/Map';
 
 export type PointerStorage = Map<MemorySlotPointer, MemorySlotData<u256>>;
 export type BlockchainStorage = Map<Address, PointerStorage>;
@@ -24,31 +23,40 @@ export class BlockchainEnvironment {
     private externalCalls: Map<Address, Uint8Array[]> = new Map();
     private externalCallsResponse: Map<Address, Uint8Array[]> = new Map();
 
-    private defaults: ContractDefaults = new ContractDefaults();
     private events: NetEvent[] = [];
 
     private _callee: PotentialAddress = null;
     private _caller: PotentialAddress = null;
-
-    private contract: OP_NET | null = null;
     private currentBlock: u256 = u256.Zero;
 
     constructor() {
+    }
+
+    public _owner: Potential<Address> = null;
+
+    public get owner(): Address {
+        if (!this._owner) {
+            throw this.error('Owner is required');
+        }
+
+        return this._owner as Address;
+    }
+
+    public _contractAddress: Potential<Address> = null;
+
+    public get contractAddress(): Address {
+        if (!this._contractAddress) {
+            throw this.error('Contract address is required');
+        }
+
+        return this._contractAddress as Address;
     }
 
     public get blockNumber(): u256 {
         return this.currentBlock;
     }
 
-    public setContract(contract: OP_NET): void {
-        if (this.contract !== null) {
-            throw this.error('Contract already set');
-        }
-
-        this.contract = contract;
-    }
-
-    public purgeMemory(): void {
+    private purgeMemory(): void {
         this.storage.clear();
         this.initializedStorage.clear();
 
@@ -81,14 +89,8 @@ export class BlockchainEnvironment {
         this._callee = reader.readAddress();
         this.currentBlock = reader.readU256();
 
-        const owner = reader.readAddress();
-        const contractAddress = reader.readAddress();
-
-        this.defaults.loadContractDefaults(owner, contractAddress);
-    }
-
-    public getDefaults(): ContractDefaults {
-        return this.defaults;
+        this._owner = reader.readAddress();
+        this._contractAddress = reader.readAddress();
     }
 
     public call(destinationContract: Address, calldata: BytesWriter): BytesReader {
@@ -151,8 +153,6 @@ export class BlockchainEnvironment {
             buffer.writeU64(event.getEventDataSelector());
             buffer.writeBytesWithLength(event.getEventData());
         }
-
-        this.events = [];
 
         return buffer.getBuffer();
     }
@@ -227,15 +227,13 @@ export class BlockchainEnvironment {
                 storage.set(keyPointer, value);
             }
         }
-
-        memoryReader.purgeBuffer();
     }
 
     public storageToBytes(): Uint8Array {
         const memoryWriter: BytesWriter = new BytesWriter();
         memoryWriter.writeStorage(this.storage);
 
-        this.storage.clear();
+        //this.storage.clear();
 
         return memoryWriter.getBuffer();
     }
@@ -244,7 +242,7 @@ export class BlockchainEnvironment {
         const memoryWriter: BytesWriter = new BytesWriter();
         memoryWriter.writeStorage(this.initializedStorage);
 
-        this.initializedStorage.clear();
+        //this.initializedStorage.clear();
 
         return memoryWriter.getBuffer();
     }

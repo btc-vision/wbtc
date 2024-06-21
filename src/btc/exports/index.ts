@@ -1,32 +1,25 @@
-import { ABIRegistry, Calldata } from '../universal/ABIRegistry';
+import { Calldata } from '../universal/ABIRegistry';
 import { Blockchain } from '../env';
 import { Selector } from '../math/abi';
 import { BytesWriter } from '../buffer/BytesWriter';
-import { OP_NET } from '../contracts/OP_NET';
 import { BytesReader } from '../buffer/BytesReader';
+import { wBTC } from '../../contract/WBTC';
 
-export function readMethod(method: Selector, contract: OP_NET | null, data: Uint8Array): Uint8Array {
-    const methodToCall = ABIRegistry.hasMethodBySelector(method, contract);
-    if (!methodToCall) {
-        throw new Error(`Method not found for selector ${method}`);
-    }
+export function readMethod(method: Selector, data: Uint8Array): Uint8Array {
+    const contract = new wBTC();
 
     const calldata: Calldata = new BytesReader(data);
-    const result: BytesWriter = methodToCall.callMethod(method, calldata);
+    const result: BytesWriter = contract.callMethod(method, calldata);
 
     return result.getBuffer();
 }
 
-export function readView(method: Selector, contract: OP_NET | null): Uint8Array {
-    const methodToCall = ABIRegistry.hasSelectorForView(method, contract);
-    if (!methodToCall) {
-        throw new Error(`View not found for selector ${method}`);
-    }
+export function readView(method: Selector): Uint8Array {
+    const contract = new wBTC();
 
-    const result: BytesWriter = methodToCall.callView(method);
+    const result: BytesWriter = contract.callView(method);
     return result.getBuffer();
 }
-
 
 export function getEvents(): Uint8Array {
     return Blockchain.getEvents();
@@ -66,8 +59,4 @@ export function getCalls(): Uint8Array {
 
 export function setEnvironment(data: Uint8Array): void {
     Blockchain.setEnvironment(data);
-}
-
-export function purgeMemory(): void {
-    Blockchain.purgeMemory();
 }

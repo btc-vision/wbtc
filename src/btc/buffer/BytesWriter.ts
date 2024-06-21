@@ -2,12 +2,13 @@ import { u256 } from 'as-bignum/assembly';
 import { Address, ADDRESS_BYTE_LENGTH } from '../types/Address';
 import { Selector } from '../math/abi';
 import { BytesReader } from './BytesReader';
-import { MethodMap, PropertyABIMap, SelectorsMap } from '../universal/ABIRegistry';
+import { SelectorsMap } from '../universal/ABIRegistry';
 import { MemorySlotPointer } from '../memory/MemorySlotPointer';
 import { MemorySlotData } from '../memory/MemorySlot';
 import { BlockchainStorage, PointerStorage } from '../env/BTCEnvironment';
 import { cyrb53a } from '../math/cyrb53';
 import { Revert } from '../types/Revert';
+import { Map } from '../generic/Map';
 
 export enum BufferDataType {
     U8 = 0,
@@ -166,11 +167,10 @@ export class BytesWriter {
 
         const keys = map.keys();
         for (let i = 0; i < keys.length; i++) {
-            const key = keys[i];
+            const key: u32 = keys[i] as u32;
             const value = map.get(key);
 
-            this.writeAddress(key.address);
-            this.writeSelectors(value);
+            this.writeBytes(value);
         }
     }
 
@@ -181,7 +181,7 @@ export class BytesWriter {
         const keys = map.keys();
         for (let i = 0; i < keys.length; i++) {
             const key: Address = keys[i];
-            const value: u256 = map.get(key);
+            const value: u256 = map.get(key) || u256.Zero;
 
             this.writeAddress(key);
             this.writeU256(value);
@@ -196,7 +196,7 @@ export class BytesWriter {
         const keys: Address[] = map.keys();
         for (let i: i32 = 0; i < keys.length; i++) {
             const address: Address = keys[i];
-            const calls: Uint8Array[] = map.get(address);
+            const calls: Uint8Array[] = map.get(address) || [];
 
             if (calls.length > 10) throw new Revert('Too many calls.'); // no more than 16 different calls.
 
@@ -209,16 +209,11 @@ export class BytesWriter {
         }
     }
 
-    public writeMethodSelectorsMap(map: MethodMap): void {
-        this.writeU16(u16(map.size));
+    public writeMethodSelectorsMap(map: Selector[]): void {
+        this.writeU16(u16(map.length));
 
-        const keys = map.keys();
-        for (let i = 0; i < keys.length; i++) {
-            const key = keys[i];
-            const value = map.get(key);
-
-            this.writeAddress(key.address);
-            this.writeMethodSelectorMap(value);
+        for (let i = 0; i < map.length; i++) {
+            this.writeSelector(map[i]);
         }
     }
 
@@ -288,17 +283,6 @@ export class BytesWriter {
             const key = keys[i];
 
             this.writeSelector(key);
-        }
-    }
-
-    private writeSelectors(value: PropertyABIMap): void {
-        this.writeU16(u16(value.size));
-
-        const keys = value.values();
-        for (let i = 0; i < keys.length; i++) {
-            const key = keys[i];
-
-            this.writeBytes(key);
         }
     }
 

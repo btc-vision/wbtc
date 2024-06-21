@@ -1,14 +1,32 @@
-import { Blockchain } from './btc/env';
-import { OP_NET } from './btc/contracts/OP_NET';
-import { wBTC } from './contract/WBTC';
+import { ABIRegistry } from './btc/universal/ABIRegistry';
 
-export function getContract(): OP_NET {
-    const defaults = Blockchain.getDefaults();
-    const contract = new wBTC(defaults.selfAddress, defaults.ownerAddress);
+export function defineSelectors(): void {
+    ABIRegistry.defineGetterSelector('address', false);
+    ABIRegistry.defineGetterSelector('owner', false);
+    ABIRegistry.defineMethodSelector('isAddressOwner', false);
 
-    Blockchain.setContract(contract); // Prevent context loss!
+    ABIRegistry.defineMethodSelector('allowance', false);
+    ABIRegistry.defineMethodSelector('approve', true);
+    ABIRegistry.defineMethodSelector('balanceOf', false);
+    ABIRegistry.defineMethodSelector('burn', true);
+    ABIRegistry.defineMethodSelector('mint', true);
+    ABIRegistry.defineMethodSelector('transfer', true);
+    ABIRegistry.defineMethodSelector('transferFrom', true);
 
-    return contract;
+    ABIRegistry.defineGetterSelector('decimals', false);
+    ABIRegistry.defineGetterSelector('name', false);
+    ABIRegistry.defineGetterSelector('symbol', false);
+    ABIRegistry.defineGetterSelector('totalSupply', false);
+    ABIRegistry.defineGetterSelector('maxSupply', false);
+
+    ABIRegistry.defineMethodSelector('stake', true);
+    ABIRegistry.defineMethodSelector('unstake', true);
+    ABIRegistry.defineMethodSelector('stakedAmount', false);
+    ABIRegistry.defineMethodSelector('stakedReward', false);
+    ABIRegistry.defineMethodSelector('claim', true);
+
+    ABIRegistry.defineGetterSelector('rewardPool', false);
+    ABIRegistry.defineGetterSelector('totalStaked', false);
 }
 
 export * from './btc/exports';

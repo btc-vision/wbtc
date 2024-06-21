@@ -13,6 +13,7 @@ import { SafeMath } from '../btc/types/SafeMath';
 import { StakeEvent } from './events/StakeEvent';
 import { ClaimEvent } from './events/ClaimEvent';
 import { UnstakeEvent } from './events/UnstakeEvent';
+import { Map } from '../btc/generic/Map';
 
 export abstract class StackingOP0 extends OP_0 {
     private static readonly MINIMUM_STAKING_AMOUNT: u256 = u256.fromU32(10000); // 0.0001 WBTC
@@ -23,17 +24,17 @@ export abstract class StackingOP0 extends OP_0 {
     protected readonly stakingBalances: AddressMemoryMap<Address, MemorySlotData<u256>>;
     protected readonly stakingStartBlock: AddressMemoryMap<Address, MemorySlotData<u256>>;
 
-    protected constructor(self: Address, owner: Address, maxSupply: u256) {
-        super(self, owner, maxSupply);
+    protected constructor(maxSupply: u256) {
+        super(maxSupply);
 
-        const rewardPool: u256 = Blockchain.getStorageAt(self, 4, u256.Zero, u256.Zero);
-        this._rewardPool = new StoredU256(self, 4, u256.Zero, rewardPool);
+        const rewardPool: u256 = Blockchain.getStorageAt(Blockchain.contractAddress, 4, u256.Zero, u256.Zero);
+        this._rewardPool = new StoredU256(Blockchain.contractAddress, 4, u256.Zero, rewardPool);
 
-        const totalStaked: u256 = Blockchain.getStorageAt(self, 5, u256.Zero, u256.Zero);
-        this._totalStaked = new StoredU256(self, 5, u256.Zero, totalStaked);
+        const totalStaked: u256 = Blockchain.getStorageAt(Blockchain.contractAddress, 5, u256.Zero, u256.Zero);
+        this._totalStaked = new StoredU256(Blockchain.contractAddress, 5, u256.Zero, totalStaked);
 
-        this.stakingBalances = new AddressMemoryMap<Address, MemorySlotData<u256>>(6, self, u256.Zero);
-        this.stakingStartBlock = new AddressMemoryMap<Address, MemorySlotData<u256>>(7, self, u256.Zero);
+        this.stakingBalances = new AddressMemoryMap<Address, MemorySlotData<u256>>(6, Blockchain.contractAddress, u256.Zero);
+        this.stakingStartBlock = new AddressMemoryMap<Address, MemorySlotData<u256>>(7, Blockchain.contractAddress, u256.Zero);
     }
 
     public _rewardPool: StoredU256;
@@ -78,8 +79,9 @@ export abstract class StackingOP0 extends OP_0 {
 
         this.createStakeEvent(newBalance);
 
-        this.response.writeBoolean(true);
-        return this.response;
+        const response = new BytesWriter();
+        response.writeBoolean(true);
+        return response;
     }
 
     public claim(): BytesWriter {
@@ -90,8 +92,9 @@ export abstract class StackingOP0 extends OP_0 {
             throw new Revert('Claim failed');
         }
 
-        this.response.writeBoolean(true);
-        return this.response;
+        const response = new BytesWriter();
+        response.writeBoolean(true);
+        return response;
     }
 
     public unstake(): BytesWriter {
@@ -125,8 +128,9 @@ export abstract class StackingOP0 extends OP_0 {
 
         this.createUnstakeEvent(amount);
 
-        this.response.writeBoolean(true);
-        return this.response;
+        const response = new BytesWriter();
+        response.writeBoolean(true);
+        return response;
     }
 
     public override mint(callData: Calldata): BytesWriter {
@@ -138,7 +142,7 @@ export abstract class StackingOP0 extends OP_0 {
         const keys = feeRecipients.keys();
         for (let i = 0; i < keys.length; i++) {
             const key: Address = keys[i];
-            const value: u256 = feeRecipients.get(key);
+            const value: u256 = feeRecipients.get(key) || u256.Zero;
 
             this._mint(key, value);
         }
@@ -148,9 +152,10 @@ export abstract class StackingOP0 extends OP_0 {
         // @ts-ignore
         this._rewardPool += stackingReward;
 
-        this.response.writeBoolean(resp);
+        const response = new BytesWriter();
+        response.writeBoolean(resp);
 
-        return this.response;
+        return response;
     }
 
     public override burn(callData: Calldata): BytesWriter {
@@ -166,7 +171,7 @@ export abstract class StackingOP0 extends OP_0 {
         const keys = feeRecipients.keys();
         for (let i = 0; i < keys.length; i++) {
             const key: Address = keys[i];
-            const value: u256 = feeRecipients.get(key);
+            const value: u256 = feeRecipients.get(key) || u256.Zero;
 
             this._mint(key, value);
         }
@@ -174,18 +179,19 @@ export abstract class StackingOP0 extends OP_0 {
         // @ts-ignore
         this._rewardPool += stackingReward;
 
-        this.response.writeBoolean(resp);
+        const response = new BytesWriter();
+        response.writeBoolean(resp);
 
-        return this.response;
+        return response;
     }
 
     public stakedAmount(calldata: Calldata): BytesWriter {
         const staker: Address = calldata.readAddress();
         const amount: u256 = this.stakingBalances.get(staker);
 
-        this.response.writeU256(amount);
-
-        return this.response;
+        const response = new BytesWriter();
+        response.writeU256(amount);
+        return response;
     }
 
     public stakedReward(calldata: Calldata): BytesWriter {
@@ -197,9 +203,10 @@ export abstract class StackingOP0 extends OP_0 {
         const duration: u256 = SafeMath.sub(endBlock, startBlock);
         const reward: u256 = this.calculateReward(amount, duration);
 
-        this.response.writeU256(reward);
+        const response = new BytesWriter();
+        response.writeU256(reward);
 
-        return this.response;
+        return response;
     }
 
     public callMethod(method: Selector, calldata: Calldata): BytesWriter {
@@ -232,32 +239,21 @@ export abstract class StackingOP0 extends OP_0 {
     }
 
     public callView(method: Selector): BytesWriter {
+        const response = new BytesWriter();
+
         switch (method) {
             case encodeSelector('rewardPool'): {
-                this.response.writeU256(this.rewardPool);
-                return this.response;
+                response.writeU256(this.rewardPool);
+                return response;
             }
             case encodeSelector('totalStaked'): {
-                this.response.writeU256(this.totalStaked);
-                return this.response;
+                response.writeU256(this.totalStaked);
+                return response;
             }
             default: {
                 return super.callView(method);
             }
         }
-    }
-
-    public defineSelectors(): void {
-        super.defineSelectors();
-
-        this.defineMethodSelector('stake', true);
-        this.defineMethodSelector('unstake', true);
-        this.defineMethodSelector('stakedAmount', false);
-        this.defineMethodSelector('stakedReward', false);
-        this.defineMethodSelector('claim', true);
-
-        this.defineGetterSelector('rewardPool', false);
-        this.defineGetterSelector('totalStaked', false);
     }
 
     private claimReward(staker: Address): bool {
