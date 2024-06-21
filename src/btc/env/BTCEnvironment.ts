@@ -18,8 +18,6 @@ export type BlockchainStorage = Map<Address, PointerStorage>;
 export class BlockchainEnvironment {
     private static readonly runtimeException: string = 'RuntimeException';
 
-    public isInitialized: boolean = true;
-
     private storage: BlockchainStorage = new Map();
     private initializedStorage: BlockchainStorage = new Map();
 
@@ -94,10 +92,6 @@ export class BlockchainEnvironment {
     }
 
     public call(destinationContract: Address, calldata: BytesWriter): BytesReader {
-        if (!this.isInitialized) {
-            throw this.error('Not initialized');
-        }
-
         if (destinationContract === this._callee) {
             throw this.error('Cannot call self');
         }
@@ -265,10 +259,6 @@ export class BlockchainEnvironment {
     }
 
     private getExternalCallResponse(destinationContract: Address, index: i32): Potential<Uint8Array> {
-        if (!this.isInitialized) {
-            throw this.error('Not initialized');
-        }
-
         if (!this.externalCallsResponse.has(destinationContract)) {
             this.externalCallsResponse.set(destinationContract, []);
         }

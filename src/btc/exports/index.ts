@@ -27,12 +27,13 @@ export function readView(method: Selector, contract: OP_NET | null): Uint8Array 
     return result.getBuffer();
 }
 
-export function getViewABI(): Uint8Array {
-    return Blockchain.getViewSelectors();
-}
 
 export function getEvents(): Uint8Array {
     return Blockchain.getEvents();
+}
+
+export function getViewABI(): Uint8Array {
+    return Blockchain.getViewSelectors();
 }
 
 export function getMethodABI(): Uint8Array {
@@ -61,10 +62,6 @@ export function loadCallsResponse(data: Uint8Array): void {
 
 export function getCalls(): Uint8Array {
     return Blockchain.getCalls();
-}
-
-export function isInitialized(): boolean {
-    return Blockchain.isInitialized;
 }
 
 export function setEnvironment(data: Uint8Array): void {
