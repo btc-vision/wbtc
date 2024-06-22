@@ -17,8 +17,8 @@ import { Map } from '../btc/generic/Map';
 
 export abstract class StackingOP0 extends OP_0 {
     private static readonly MINIMUM_STAKING_AMOUNT: u256 = u256.fromU32(10000); // 0.0001 WBTC
-    private static readonly MINIMUM_STAKING_DURATION: u256 = u256.fromU32(1); //576
-    private static readonly DURATION_MULTIPLIER: u256 = u256.fromU32(1); //2016
+    private static readonly MINIMUM_STAKING_DURATION: u256 = u256.fromU32(576);
+    private static readonly DURATION_MULTIPLIER: u256 = u256.fromU32(2016);
     private static readonly MAXIMUM_DURATION_MULTIPLIER: u256 = u256.fromU32(50); // 50x reward
 
     protected readonly stakingBalances: AddressMemoryMap<Address, MemorySlotData<u256>>;
