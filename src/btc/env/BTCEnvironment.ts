@@ -13,6 +13,13 @@ import { Map } from '../generic/Map';
 export type PointerStorage = Map<MemorySlotPointer, MemorySlotData<u256>>;
 export type BlockchainStorage = Map<Address, PointerStorage>;
 
+//@external('env', 'load')
+//export declare function load(pointer: u256): u256;
+
+//@external('env', 'store')
+//xport declare function store(pointer: u256, value: u256): void;
+
+
 @final
 export class BlockchainEnvironment {
     private static readonly runtimeException: string = 'RuntimeException';
@@ -54,16 +61,6 @@ export class BlockchainEnvironment {
 
     public get blockNumber(): u256 {
         return this.currentBlock;
-    }
-
-    private purgeMemory(): void {
-        this.storage.clear();
-        this.initializedStorage.clear();
-
-        this.events = [];
-
-        this.externalCallsResponse.clear();
-        this.externalCalls.clear();
     }
 
     public callee(): Address {
@@ -247,10 +244,22 @@ export class BlockchainEnvironment {
         return memoryWriter.getBuffer();
     }
 
+    private purgeMemory(): void {
+        this.storage.clear();
+        this.initializedStorage.clear();
+
+        this.events = [];
+
+        this.externalCallsResponse.clear();
+        this.externalCalls.clear();
+    }
+
     private requireInitialStorage(address: Address, pointerHash: u256, defaultValue: u256): void {
         if (!this.initializedStorage.has(address)) {
             this.initializedStorage.set(address, new Map<u256, MemorySlotData<u256>>());
         }
+
+        //load(pointerHash);
 
         const storage = this.initializedStorage.get(address);
         storage.set(pointerHash, defaultValue);
@@ -281,6 +290,8 @@ export class BlockchainEnvironment {
                 storage.delete(key);
             }
         }
+
+        //store(pointerHash, value);
 
         storage.set(pointerHash, value);
     }

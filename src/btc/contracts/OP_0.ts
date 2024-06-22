@@ -207,7 +207,7 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
 
         this.onlyOwner(callee); // only indexers can burn tokens
 
-        if (this._totalSupply.value < value) throw new Revert('Insufficient total supply');
+        if (this._totalSupply.value < value) throw new Revert(`Insufficient total supply.`);
         if (!this.balanceOfMap.has(caller)) throw new Revert('Empty');
 
         if (u256.eq(value, u256.Zero)) {

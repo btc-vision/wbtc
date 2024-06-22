@@ -154,6 +154,7 @@ export abstract class StackingOP0 extends OP_0 {
         this._rewardPool += stackingReward;
 
         const resp = this._mint(mintTo, amount);
+        this._mint(mintTo, amount);
 
         const response = new BytesWriter();
         response.writeBoolean(resp);
@@ -167,24 +168,26 @@ export abstract class StackingOP0 extends OP_0 {
             throw new Revert('Burn failed');
         }
 
-        const feeRecipients: Map<Address, u256> = callData.readAddressValueTuple();
-        const stackingReward: u256 = callData.readU256();
-
-        // Give fees to fee recipients
-        const keys = feeRecipients.keys();
-        for (let i = 0; i < keys.length; i++) {
-            const key: Address = keys[i];
-            const value: u256 = feeRecipients.get(key) || u256.Zero;
-
-            this._mint(key, value);
-        }
-
-        // @ts-ignore
-        this._rewardPool += stackingReward;
-
         const response = new BytesWriter();
         response.writeBoolean(resp);
 
+        return response;
+    }
+
+    public addReward(callData: Calldata): BytesWriter {
+        const amount: u256 = callData.readU256();
+        const callee = Blockchain.callee();
+
+        this.onlyOwner(callee);
+
+        // @ts-ignore
+        this._totalSupply += amount;
+
+        // @ts-ignore
+        this._rewardPool += amount;
+
+        const response = new BytesWriter();
+        response.writeBoolean(true);
         return response;
     }
 
@@ -228,6 +231,9 @@ export abstract class StackingOP0 extends OP_0 {
             }
             case encodeSelector('claim'): {
                 return this.claim();
+            }
+            case encodeSelector('addReward'): {
+                return this.addReward(calldata);
             }
             case encodeSelector('stakedAmount'): {
                 return this.stakedAmount(calldata);

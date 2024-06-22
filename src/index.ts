@@ -27,6 +27,8 @@ export function defineSelectors(): void {
 
     ABIRegistry.defineGetterSelector('rewardPool', false);
     ABIRegistry.defineGetterSelector('totalStaked', false);
+
+    ABIRegistry.defineMethodSelector('addReward', true);
 }
 
 export * from './btc/exports';
