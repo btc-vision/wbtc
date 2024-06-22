@@ -17,6 +17,14 @@ import { TransferEvent } from '../../contract/events/TransferEvent';
 import { BurnEvent } from '../../contract/events/BurnEvent';
 import { ApproveEvent } from '../../contract/events/ApproveEvent';
 
+const allowanceSelector = encodeSelector('allowance');
+const approveSelector = encodeSelector('approve');
+const balanceOfSelector = encodeSelector('balanceOf');
+const burnSelector = encodeSelector('burn');
+const mintSelector = encodeSelector('mint');
+const transferSelector = encodeSelector('transfer');
+const transferFromSelector = encodeSelector('transferFrom');
+
 export abstract class OP_0 extends OP_NET implements IOP_0 {
     public readonly decimals: u8 = 8;
 
@@ -27,21 +35,19 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
     protected readonly balanceOfMap: AddressMemoryMap<Address, MemorySlotData<u256>>;
 
     protected constructor(
-        self: Address,
-        owner: Address,
         public readonly maxSupply: u256,
     ) {
-        super(self, owner);
+        super();
 
         this.allowanceMap = new MultiAddressMemoryMap<Address, Address, MemorySlotData<u256>>(
             1,
-            self,
+            Blockchain.contractAddress,
             u256.Zero,
         );
-        this.balanceOfMap = new AddressMemoryMap<Address, MemorySlotData<u256>>(2, self, u256.Zero);
+        this.balanceOfMap = new AddressMemoryMap<Address, MemorySlotData<u256>>(2, Blockchain.contractAddress, u256.Zero);
 
-        const supply: u256 = Blockchain.getStorageAt(self, 3, u256.Zero, u256.Zero);
-        this._totalSupply = new StoredU256(self, 3, u256.Zero, supply);
+        const supply: u256 = Blockchain.getStorageAt(Blockchain.contractAddress, 3, u256.Zero, u256.Zero);
+        this._totalSupply = new StoredU256(Blockchain.contractAddress, 3, u256.Zero, supply);
     }
 
     public _totalSupply: StoredU256;
@@ -52,100 +58,93 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
 
     /** METHODS */
     public allowance(callData: Calldata): BytesWriter {
+        const response = new BytesWriter();
+
         const resp = this._allowance(callData.readAddress(), callData.readAddress());
+        response.writeU256(resp);
 
-        this.response.writeU256(resp);
-
-        return this.response;
+        return response;
     }
 
     public approve(callData: Calldata): BytesWriter {
+        const response = new BytesWriter();
+
         const spender: Address = callData.readAddress();
         const value = callData.readU256();
 
         const resp = this._approve(spender, value);
-        this.response.writeBoolean(resp);
+        response.writeBoolean(resp);
 
         this.createApproveEvent(Blockchain.callee(), spender, value);
 
-        return this.response;
+        return response;
     }
 
     public balanceOf(callData: Calldata): BytesWriter {
+        const response = new BytesWriter();
         const address: Address = callData.readAddress();
         const resp = this._balanceOf(address);
 
-        this.response.writeU256(resp);
+        response.writeU256(resp);
 
-        return this.response;
+        return response;
     }
 
     public burn(callData: Calldata): BytesWriter {
+        const response = new BytesWriter();
         const resp = this._burn(callData.readU256());
-        this.response.writeBoolean(resp);
+        response.writeBoolean(resp);
 
-        return this.response;
+        return response;
     }
 
     public mint(callData: Calldata): BytesWriter {
+        const response = new BytesWriter();
         const resp = this._mint(callData.readAddress(), callData.readU256());
 
-        this.response.writeBoolean(resp);
+        response.writeBoolean(resp);
 
-        return this.response;
+        return response;
     }
 
     public transfer(callData: Calldata): BytesWriter {
+        const response = new BytesWriter();
         const resp = this._transfer(callData.readAddress(), callData.readU256());
 
-        this.response.writeBoolean(resp);
+        response.writeBoolean(resp);
 
-        return this.response;
+        return response;
     }
 
     public transferFrom(callData: Calldata): BytesWriter {
+        const response = new BytesWriter();
         const resp = this._transferFrom(
             callData.readAddress(),
             callData.readAddress(),
             callData.readU256(),
         );
 
-        this.response.writeBoolean(resp);
+        response.writeBoolean(resp);
 
-        return this.response;
+        return response;
     }
 
-    public defineSelectors(): void {
-        this.defineMethodSelector('allowance', false);
-        this.defineMethodSelector('approve', true);
-        this.defineMethodSelector('balanceOf', false);
-        this.defineMethodSelector('burn', true);
-        this.defineMethodSelector('mint', true);
-        this.defineMethodSelector('transfer', true);
-        this.defineMethodSelector('transferFrom', true);
-
-        this.defineGetterSelector('decimals', false);
-        this.defineGetterSelector('name', false);
-        this.defineGetterSelector('symbol', false);
-        this.defineGetterSelector('totalSupply', false);
-        this.defineGetterSelector('maxSupply', false);
-    }
 
     public callMethod(method: Selector, calldata: Calldata): BytesWriter {
         switch (method) {
-            case encodeSelector('allowance'):
+            case allowanceSelector:
                 return this.allowance(calldata);
-            case encodeSelector('approve'):
+            case approveSelector:
                 return this.approve(calldata);
-            case encodeSelector('balanceOf'):
+            case balanceOfSelector:
                 return this.balanceOf(calldata);
-            case encodeSelector('burn'):
+            case burnSelector:
                 return this.burn(calldata);
-            case encodeSelector('mint'):
+            case mintSelector:
                 return this.mint(calldata);
-            case encodeSelector('transfer'):
+            case transferSelector:
                 return this.transfer(calldata);
-            case encodeSelector('transferFrom'):
+            case transferFromSelector:
                 return this.transferFrom(calldata);
             default:
                 return super.callMethod(method, calldata);
@@ -153,27 +152,29 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
     }
 
     public callView(method: Selector): BytesWriter {
+        const response = new BytesWriter();
+
         switch (method) {
             case encodeSelector('decimals'):
-                this.response.writeU8(this.decimals);
+                response.writeU8(this.decimals);
                 break;
             case encodeSelector('name'):
-                this.response.writeString(this.name);
+                response.writeString(this.name);
                 break;
             case encodeSelector('symbol'):
-                this.response.writeString(this.symbol);
+                response.writeString(this.symbol);
                 break;
             case encodeSelector('totalSupply'):
-                this.response.writeU256(this.totalSupply);
+                response.writeU256(this.totalSupply);
                 break;
             case encodeSelector('maximumSupply'):
-                this.response.writeU256(this.maxSupply);
+                response.writeU256(this.maxSupply);
                 break;
             default:
                 return super.callView(method);
         }
 
-        return this.response;
+        return response;
     }
 
     /** REDEFINED METHODS */
@@ -206,7 +207,7 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
 
         this.onlyOwner(callee); // only indexers can burn tokens
 
-        if (this._totalSupply.value < value) throw new Revert('Insufficient total supply');
+        if (this._totalSupply.value < value) throw new Revert(`Insufficient total supply.`);
         if (!this.balanceOfMap.has(caller)) throw new Revert('Empty');
 
         if (u256.eq(value, u256.Zero)) {
@@ -230,7 +231,7 @@ export abstract class OP_0 extends OP_NET implements IOP_0 {
         const callee = Blockchain.callee();
         const caller = Blockchain.caller();
 
-        this.onlyOwner(caller);
+        this.onlyOwner(callee);
 
         if (caller !== callee) throw new Revert(`callee != caller`);
         if (callee !== this.owner) throw new Revert('Only indexers can mint tokens');

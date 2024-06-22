@@ -1,54 +1,31 @@
 import { IBTC } from '../interfaces/IBTC';
 import { Address } from '../types/Address';
 import { Blockchain } from '../env';
-import { ABIRegistry, Calldata } from '../universal/ABIRegistry';
+import { Calldata } from '../universal/ABIRegistry';
 import { BytesWriter } from '../buffer/BytesWriter';
 import { encodeSelector, Selector } from '../math/abi';
 import { Revert } from '../types/Revert';
 import { MAX_EVENT_DATA_SIZE, NetEvent } from '../events/NetEvent';
 
+const isAddressOwnerSelector = encodeSelector('isAddressOwner');
+const addressSelector = encodeSelector('address');
+const ownerSelector = encodeSelector('owner');
+
 export abstract class OP_NET implements IBTC {
-    public readonly response: BytesWriter = new BytesWriter();
-
-    private readonly _owner: string;
-    private readonly _address: string;
-
-    protected constructor(contractAddress: Address, owner: Address) {
-        if (!contractAddress) {
-            throw new Revert('CONTRACT DOESNT NOT KNOW ITS OWN ADDRESS.');
-        }
-
-        if (!owner) {
-            throw new Revert('NO CONTRACT INITIALIZER FOUND.');
-        }
-
-        this._owner = owner;
-        this._address = contractAddress;
-
-        if (!this._owner) {
-            throw new Revert('Owner is required');
-        }
-
-        if (!this._address) {
-            throw new Revert('Self is required');
-        }
-
-        this.defineProtectedSelectors();
+    protected constructor() {
     }
 
     public get address(): string {
-        return this._address;
+        return Blockchain.contractAddress;
     }
 
     public get owner(): string {
-        return this._owner;
+        return Blockchain.owner;
     }
-
-    public abstract defineSelectors(): void;
 
     public callMethod(method: Selector, calldata: Calldata): BytesWriter {
         switch (method) {
-            case encodeSelector('isAddressOwner'):
+            case isAddressOwnerSelector:
                 return this.isAddressOwner(calldata);
             default:
                 throw new Revert('Method not found');
@@ -56,18 +33,20 @@ export abstract class OP_NET implements IBTC {
     }
 
     public callView(method: Selector): BytesWriter {
+        const response = new BytesWriter();
+
         switch (method) {
-            case encodeSelector('address'):
-                this.response.writeAddress(this.address);
+            case addressSelector:
+                response.writeAddress(this.address);
                 break;
-            case encodeSelector('owner'):
-                this.response.writeAddress(this.owner);
+            case ownerSelector:
+                response.writeAddress(this.owner);
                 break;
             default:
                 throw new Revert('Method not found');
         }
 
-        return this.response;
+        return response;
     }
 
     protected emitEvent(event: NetEvent): void {
@@ -78,37 +57,22 @@ export abstract class OP_NET implements IBTC {
         Blockchain.addEvent(event);
     }
 
-    protected defineGetterSelector(name: string, canWrite: boolean): void {
-        ABIRegistry.defineGetterSelector(this, name, canWrite);
-    }
-
     protected isSelf(address: Address): boolean {
-        return this._address === address;
+        return this.address === address;
     }
 
     protected onlyOwner(caller: Address): void {
-        if (this._owner !== caller) {
+        if (this.owner !== caller) {
             throw new Revert('Only owner can call this method');
         }
     }
 
-    protected defineMethodSelector(name: string, canWrite: boolean): void {
-        ABIRegistry.defineMethodSelector(this, name, canWrite);
-    }
-
     private isAddressOwner(calldata: Calldata): BytesWriter {
+        const response = new BytesWriter();
         const owner = calldata.readAddress();
 
-        this.response.writeBoolean(this._owner === owner);
+        response.writeBoolean(this.owner === owner);
 
-        return this.response;
+        return response;
     };
-
-    private defineProtectedSelectors(): void {
-        this.defineGetterSelector('address', false);
-        this.defineGetterSelector('owner', false);
-        this.defineMethodSelector('isAddressOwner', false);
-
-        this.defineSelectors();
-    }
 }

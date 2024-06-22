@@ -2,6 +2,7 @@ import { Address } from '../types/Address';
 import { MemorySlotData } from './MemorySlot';
 import { u256 } from 'as-bignum/assembly';
 import { KeyMerger } from './KeyMerger';
+import { Map } from '../generic/Map';
 
 @final
 export class MultiAddressMemoryMap<K extends string, K2 extends string, V extends MemorySlotData<u256>> extends Map<K, KeyMerger<K, K2, V>> {
@@ -36,7 +37,7 @@ export class MultiAddressMemoryMap<K extends string, K2 extends string, V extend
     public set(key: K, value: KeyMerger<K, K2, V>): this {
         this.createKeyMerger(key);
 
-        return <this>super.set(key, value);
+        return <this><unknown>super.set(key, value);
     }
 
     public has(key: K): bool {

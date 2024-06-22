@@ -6,7 +6,7 @@
     "scripts": {
         "test": "jest",
         "asbuild:debug": "asc src/index.ts --target debug --exportTable --measure",
-        "asbuild:release": "asc src/index.ts --target release --measure -O --noAssert --optimizeLevel 3 --shrinkLevel 2 --converge --runtime incremental",
+        "asbuild:release": "asc src/index.ts --target release --measure -Ospeed --noAssert --optimizeLevel 3 --shrinkLevel 2 --converge --disable mutable-globals,sign-extension,nontrapping-f2i,bulk-memory --runtime stub --memoryBase 0 --lowMemoryLimit --uncheckedBehavior never --initialMemory 16 --maximumMemory 16 --exportRuntime",
         "asbuild": "npm run asbuild:debug && npm run asbuild:release",
         "start": "npx serve ."
     },

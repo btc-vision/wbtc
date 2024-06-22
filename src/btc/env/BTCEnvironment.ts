@@ -2,23 +2,27 @@ import { Address, PotentialAddress } from '../types/Address';
 import { MemorySlotPointer } from '../memory/MemorySlotPointer';
 import { MemorySlotData } from '../memory/MemorySlot';
 import { u256 } from 'as-bignum/assembly';
-import { ContractDefaults } from '../lang/ContractDefaults';
 import { ABIRegistry } from '../universal/ABIRegistry';
 import { BytesReader } from '../buffer/BytesReader';
 import { encodePointerHash } from '../math/abi';
 import { BytesWriter } from '../buffer/BytesWriter';
 import { MAX_EVENTS, NetEvent } from '../events/NetEvent';
 import { Potential } from '../lang/Definitions';
-import { OP_NET } from '../contracts/OP_NET';
+import { Map } from '../generic/Map';
 
 export type PointerStorage = Map<MemorySlotPointer, MemorySlotData<u256>>;
 export type BlockchainStorage = Map<Address, PointerStorage>;
 
+//@external('env', 'load')
+//export declare function load(pointer: u256): u256;
+
+//@external('env', 'store')
+//xport declare function store(pointer: u256, value: u256): void;
+
+
 @final
 export class BlockchainEnvironment {
     private static readonly runtimeException: string = 'RuntimeException';
-
-    public isInitialized: boolean = false;
 
     private storage: BlockchainStorage = new Map();
     private initializedStorage: BlockchainStorage = new Map();
@@ -26,44 +30,37 @@ export class BlockchainEnvironment {
     private externalCalls: Map<Address, Uint8Array[]> = new Map();
     private externalCallsResponse: Map<Address, Uint8Array[]> = new Map();
 
-    private defaults: ContractDefaults = new ContractDefaults();
     private events: NetEvent[] = [];
 
     private _callee: PotentialAddress = null;
     private _caller: PotentialAddress = null;
-
-    private contract: OP_NET | null = null;
     private currentBlock: u256 = u256.Zero;
 
     constructor() {
     }
 
+    public _owner: Potential<Address> = null;
+
+    public get owner(): Address {
+        if (!this._owner) {
+            throw this.error('Owner is required');
+        }
+
+        return this._owner as Address;
+    }
+
+    public _contractAddress: Potential<Address> = null;
+
+    public get contractAddress(): Address {
+        if (!this._contractAddress) {
+            throw this.error('Contract address is required');
+        }
+
+        return this._contractAddress as Address;
+    }
+
     public get blockNumber(): u256 {
         return this.currentBlock;
-    }
-
-    public requireInitialization(): void {
-        if (!this.isInitialized) {
-            throw this.error('Not initialized');
-        }
-    }
-
-    public setContract(contract: OP_NET): void {
-        if (this.contract !== null) {
-            throw this.error('Contract already set');
-        }
-
-        this.contract = contract;
-    }
-
-    public purgeMemory(): void {
-        this.storage.clear();
-        this.initializedStorage.clear();
-
-        this.events = [];
-
-        this.externalCallsResponse.clear();
-        this.externalCalls.clear();
     }
 
     public callee(): Address {
@@ -82,34 +79,18 @@ export class BlockchainEnvironment {
         return this._caller as Address;
     }
 
-    public init(owner: Address, contractAddress: Address): void {
-        if (this.isInitialized) {
-            throw this.error(`Already initialized`);
-        }
-
-        this.defaults.loadContractDefaults(owner, contractAddress);
-        this.isInitialized = true;
-
-        return;
-    }
-
     public setEnvironment(data: Uint8Array): void {
         const reader: BytesReader = new BytesReader(data);
 
         this._caller = reader.readAddress();
         this._callee = reader.readAddress();
         this.currentBlock = reader.readU256();
-    }
 
-    public getDefaults(): ContractDefaults {
-        return this.defaults;
+        this._owner = reader.readAddress();
+        this._contractAddress = reader.readAddress();
     }
 
     public call(destinationContract: Address, calldata: BytesWriter): BytesReader {
-        if (!this.isInitialized) {
-            throw this.error('Not initialized');
-        }
-
         if (destinationContract === this._callee) {
             throw this.error('Cannot call self');
         }
@@ -169,8 +150,6 @@ export class BlockchainEnvironment {
             buffer.writeU64(event.getEventDataSelector());
             buffer.writeBytesWithLength(event.getEventData());
         }
-
-        this.events = [];
 
         return buffer.getBuffer();
     }
@@ -245,15 +224,13 @@ export class BlockchainEnvironment {
                 storage.set(keyPointer, value);
             }
         }
-
-        memoryReader.purgeBuffer();
     }
 
     public storageToBytes(): Uint8Array {
         const memoryWriter: BytesWriter = new BytesWriter();
         memoryWriter.writeStorage(this.storage);
 
-        this.storage.clear();
+        //this.storage.clear();
 
         return memoryWriter.getBuffer();
     }
@@ -262,9 +239,19 @@ export class BlockchainEnvironment {
         const memoryWriter: BytesWriter = new BytesWriter();
         memoryWriter.writeStorage(this.initializedStorage);
 
-        this.initializedStorage.clear();
+        //this.initializedStorage.clear();
 
         return memoryWriter.getBuffer();
+    }
+
+    private purgeMemory(): void {
+        this.storage.clear();
+        this.initializedStorage.clear();
+
+        this.events = [];
+
+        this.externalCallsResponse.clear();
+        this.externalCalls.clear();
     }
 
     private requireInitialStorage(address: Address, pointerHash: u256, defaultValue: u256): void {
@@ -272,15 +259,13 @@ export class BlockchainEnvironment {
             this.initializedStorage.set(address, new Map<u256, MemorySlotData<u256>>());
         }
 
+        //load(pointerHash);
+
         const storage = this.initializedStorage.get(address);
         storage.set(pointerHash, defaultValue);
     }
 
     private getExternalCallResponse(destinationContract: Address, index: i32): Potential<Uint8Array> {
-        if (!this.isInitialized) {
-            throw this.error('Not initialized');
-        }
-
         if (!this.externalCallsResponse.has(destinationContract)) {
             this.externalCallsResponse.set(destinationContract, []);
         }
@@ -305,6 +290,8 @@ export class BlockchainEnvironment {
                 storage.delete(key);
             }
         }
+
+        //store(pointerHash, value);
 
         storage.set(pointerHash, value);
     }
