@@ -37,7 +37,7 @@ efficient decentralized applications (dApps) on Bitcoin Layer 1.
 
 ### Staking
 
-Learn more about staking [here](https://github.com/btc-vision/bsi-contract/blob/main/STAKING.md).
+Learn more about staking [here](https://github.com/btc-vision/wbtc/blob/main/STAKING.md).
 
 ## Getting Started
 
@@ -50,11 +50,11 @@ Learn more about staking [here](https://github.com/btc-vision/bsi-contract/blob/
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/btc-vision/bsi-contract.git
+   git clone https://github.com/btc-vision/wbtc.git
    ```
 2. Navigate to the repository directory:
    ```bash
-   cd bsi-contract
+   cd wbtc
    ```
 3. Install the necessary dependencies:
    ```bash
@@ -74,4 +74,4 @@ directory.
 
 ## License
 
-View the license by clicking [here](https://github.com/btc-vision/bsi-contract/blob/main/LICENSE.md).
+View the license by clicking [here](https://github.com/btc-vision/wbtc/blob/main/LICENSE.md).
