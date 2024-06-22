@@ -154,8 +154,6 @@ export abstract class StackingOP20 extends OP_20 {
         this._rewardPool += stackingReward;
 
         const resp = this._mint(mintTo, amount);
-        this._mint(mintTo, amount);
-
         const response = new BytesWriter();
         response.writeBoolean(resp);
 
