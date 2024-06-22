@@ -25,7 +25,7 @@ const mintSelector = encodeSelector('mint');
 const transferSelector = encodeSelector('transfer');
 const transferFromSelector = encodeSelector('transferFrom');
 
-export abstract class OP_0 extends OP_NET implements IOP_0 {
+export abstract class OP_20 extends OP_NET implements IOP_0 {
     public readonly decimals: u8 = 8;
 
     public readonly name: string = `OP_20`;

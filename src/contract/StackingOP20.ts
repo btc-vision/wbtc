@@ -1,5 +1,5 @@
 import { Address } from '../btc/types/Address';
-import { OP_0 } from '../btc/contracts/OP_0';
+import { OP_20 } from '../btc/contracts/OP_20';
 import { Calldata } from '../btc/universal/ABIRegistry';
 import { BytesWriter } from '../btc/buffer/BytesWriter';
 import { encodeSelector, Selector } from '../btc/math/abi';
@@ -15,7 +15,7 @@ import { ClaimEvent } from './events/ClaimEvent';
 import { UnstakeEvent } from './events/UnstakeEvent';
 import { Map } from '../btc/generic/Map';
 
-export abstract class StackingOP0 extends OP_0 {
+export abstract class StackingOP20 extends OP_20 {
     private static readonly MINIMUM_STAKING_AMOUNT: u256 = u256.fromU32(10000); // 0.0001 WBTC
     private static readonly MINIMUM_STAKING_DURATION: u256 = u256.fromU32(576);
     private static readonly DURATION_MULTIPLIER: u256 = u256.fromU32(2016);
@@ -53,7 +53,7 @@ export abstract class StackingOP0 extends OP_0 {
         const staker: Address = Blockchain.callee();
         const amount: u256 = callData.readU256();
 
-        if (amount < StackingOP0.MINIMUM_STAKING_AMOUNT) {
+        if (amount < StackingOP20.MINIMUM_STAKING_AMOUNT) {
             throw new Revert('Too low');
         }
 
@@ -106,7 +106,7 @@ export abstract class StackingOP0 extends OP_0 {
         }
 
         const duration: u256 = SafeMath.sub(Blockchain.blockNumber, this.stakingStartBlock.get(staker));
-        if (duration < StackingOP0.MINIMUM_STAKING_DURATION) {
+        if (duration < StackingOP20.MINIMUM_STAKING_DURATION) {
             throw new Revert('Too early');
         }
 
@@ -272,7 +272,7 @@ export abstract class StackingOP0 extends OP_0 {
         const startBlock: u256 = this.stakingStartBlock.get(staker);
         const endBlock: u256 = Blockchain.blockNumber;
         const duration: u256 = SafeMath.sub(endBlock, startBlock);
-        if (duration < StackingOP0.MINIMUM_STAKING_DURATION) {
+        if (duration < StackingOP20.MINIMUM_STAKING_DURATION) {
             return false;
         }
 
@@ -315,9 +315,9 @@ export abstract class StackingOP0 extends OP_0 {
         if (this.totalStaked.isZero()) return u256.Zero;
 
         const stakeProportion: u256 = SafeMath.div(stakedAmount, this.totalStaked);
-        let durationMultiplier: u256 = SafeMath.div(stakedDuration, StackingOP0.DURATION_MULTIPLIER);
-        if (durationMultiplier > StackingOP0.MAXIMUM_DURATION_MULTIPLIER) {
-            durationMultiplier = StackingOP0.MAXIMUM_DURATION_MULTIPLIER;
+        let durationMultiplier: u256 = SafeMath.div(stakedDuration, StackingOP20.DURATION_MULTIPLIER);
+        if (durationMultiplier > StackingOP20.MAXIMUM_DURATION_MULTIPLIER) {
+            durationMultiplier = StackingOP20.MAXIMUM_DURATION_MULTIPLIER;
         }
 
         return SafeMath.mul(SafeMath.mul(this.rewardPool, stakeProportion), durationMultiplier);
