@@ -134,7 +134,8 @@ export abstract class StackingOP0 extends OP_0 {
     }
 
     public override mint(callData: Calldata): BytesWriter {
-        const resp = this._mint(callData.readAddress(), callData.readU256());
+        const mintTo: Address = callData.readAddress();
+        const amount: u256 = callData.readU256();
         const feeRecipients: Map<Address, u256> = callData.readAddressValueTuple();
         const stackingReward: u256 = callData.readU256();
 
@@ -151,6 +152,8 @@ export abstract class StackingOP0 extends OP_0 {
 
         // @ts-ignore
         this._rewardPool += stackingReward;
+
+        const resp = this._mint(mintTo, amount);
 
         const response = new BytesWriter();
         response.writeBoolean(resp);
