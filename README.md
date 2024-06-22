@@ -19,9 +19,9 @@ unwrapping of Bitcoin, staking for rewards, and leveraging WBTC for decentralize
 Wrapped Bitcoin (WBTC) is a tokenized version of Bitcoin (BTC) on Bitcoin. WBTC is pegged 1:1 with Bitcoin, providing
 users the ability to use BTC in a tokenized form for smart contracts, staking, and other DeFi applications.
 
-## What is OP_0?
+## What is OP_20?
 
-OP_0 is the standard for executing smart contracts on Bitcoin using WebAssembly (WASM) and AssemblyScript or any other
+OP_20 is the standard for executing smart contracts on Bitcoin using WebAssembly (WASM) and AssemblyScript or any other
 language of your choice. This standard ensures deterministic contract execution, making it possible to create secure and
 efficient decentralized applications (dApps) on Bitcoin Layer 1.
 
