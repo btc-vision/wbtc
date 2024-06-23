@@ -27,25 +27,27 @@ export abstract class StackingOP20 extends OP_20 {
     protected constructor(maxSupply: u256) {
         super(maxSupply);
 
-        const rewardPool: u256 = Blockchain.getStorageAt(Blockchain.contractAddress, 4, u256.Zero, u256.Zero);
-        this._rewardPool = new StoredU256(Blockchain.contractAddress, 4, u256.Zero, rewardPool);
+        const rewardPointer = Blockchain.nextPointer;
+        const rewardPool: u256 = Blockchain.getStorageAt(Blockchain.contractAddress, rewardPointer, u256.Zero, u256.Zero);
+        this._rewardPool = new StoredU256(Blockchain.contractAddress, rewardPointer, u256.Zero, rewardPool);
 
-        const totalStaked: u256 = Blockchain.getStorageAt(Blockchain.contractAddress, 5, u256.Zero, u256.Zero);
-        this._totalStaked = new StoredU256(Blockchain.contractAddress, 5, u256.Zero, totalStaked);
+        const stakedPointer = Blockchain.nextPointer;
+        const totalStaked: u256 = Blockchain.getStorageAt(Blockchain.contractAddress, stakedPointer, u256.Zero, u256.Zero);
+        this._totalStaked = new StoredU256(Blockchain.contractAddress, stakedPointer, u256.Zero, totalStaked);
 
-        this.stakingBalances = new AddressMemoryMap<Address, MemorySlotData<u256>>(6, Blockchain.contractAddress, u256.Zero);
-        this.stakingStartBlock = new AddressMemoryMap<Address, MemorySlotData<u256>>(7, Blockchain.contractAddress, u256.Zero);
+        this.stakingBalances = new AddressMemoryMap<Address, MemorySlotData<u256>>(Blockchain.nextPointer, Blockchain.contractAddress, u256.Zero);
+        this.stakingStartBlock = new AddressMemoryMap<Address, MemorySlotData<u256>>(Blockchain.nextPointer, Blockchain.contractAddress, u256.Zero);
     }
 
-    public _rewardPool: StoredU256;
+    protected _rewardPool: StoredU256;
 
-    public get rewardPool(): u256 {
+    protected get rewardPool(): u256 {
         return this._rewardPool.value;
     }
 
-    public _totalStaked: StoredU256;
+    protected _totalStaked: StoredU256;
 
-    public get totalStaked(): u256 {
+    protected get totalStaked(): u256 {
         return this._totalStaked.value;
     }
 

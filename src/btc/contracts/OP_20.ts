@@ -40,14 +40,15 @@ export abstract class OP_20 extends OP_NET implements IOP_0 {
         super();
 
         this.allowanceMap = new MultiAddressMemoryMap<Address, Address, MemorySlotData<u256>>(
-            1,
+            Blockchain.nextPointer,
             Blockchain.contractAddress,
             u256.Zero,
         );
-        this.balanceOfMap = new AddressMemoryMap<Address, MemorySlotData<u256>>(2, Blockchain.contractAddress, u256.Zero);
+        this.balanceOfMap = new AddressMemoryMap<Address, MemorySlotData<u256>>(Blockchain.nextPointer, Blockchain.contractAddress, u256.Zero);
 
-        const supply: u256 = Blockchain.getStorageAt(Blockchain.contractAddress, 3, u256.Zero, u256.Zero);
-        this._totalSupply = new StoredU256(Blockchain.contractAddress, 3, u256.Zero, supply);
+        const supplyPointer = Blockchain.nextPointer;
+        const supply: u256 = Blockchain.getStorageAt(Blockchain.contractAddress, supplyPointer, u256.Zero, u256.Zero);
+        this._totalSupply = new StoredU256(Blockchain.contractAddress, supplyPointer, u256.Zero, supply);
     }
 
     public _totalSupply: StoredU256;
@@ -202,6 +203,10 @@ export abstract class OP_20 extends OP_NET implements IOP_0 {
     }
 
     protected _burn(value: u256): boolean {
+        if (u256.eq(value, u256.Zero)) {
+            throw new Revert(`No tokens`);
+        }
+        
         const callee = Blockchain.callee();
         const caller = Blockchain.caller();
 
@@ -209,10 +214,6 @@ export abstract class OP_20 extends OP_NET implements IOP_0 {
 
         if (this._totalSupply.value < value) throw new Revert(`Insufficient total supply.`);
         if (!this.balanceOfMap.has(caller)) throw new Revert('Empty');
-
-        if (u256.eq(value, u256.Zero)) {
-            throw new Revert(`No tokens`);
-        }
 
         const balance: u256 = this.balanceOfMap.get(caller);
         if (balance < value) throw new Revert(`Insufficient balance`);
@@ -339,6 +340,12 @@ export abstract class OP_20 extends OP_NET implements IOP_0 {
         return true;
     }
 
+    protected createBurnEvent(value: u256): void {
+        const burnEvent = new BurnEvent(value);
+
+        this.emitEvent(burnEvent);
+    }
+
     private createApproveEvent(owner: Address, spender: Address, value: u256): void {
         const approveEvent = new ApproveEvent(owner, spender, value);
 
@@ -355,11 +362,5 @@ export abstract class OP_20 extends OP_NET implements IOP_0 {
         const transferEvent = new TransferEvent(from, to, value);
 
         this.emitEvent(transferEvent);
-    }
-
-    private createBurnEvent(value: u256): void {
-        const burnEvent = new BurnEvent(value);
-
-        this.emitEvent(burnEvent);
     }
 }
