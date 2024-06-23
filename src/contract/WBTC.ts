@@ -100,17 +100,18 @@ export class wBTC extends StackingOP20 {
             throw new Revert('Insufficient funds');
         }
 
-        this.createWithdrawalRequestEvent(requestedAmount, callee);
-
+        let currentPendingBalance: u256 = u256.Zero;
         if (this.pendingWithdrawals.has(callee)) {
-            requestedAmount = SafeMath.add(requestedAmount, this.pendingWithdrawals.get(callee));
+            currentPendingBalance = this.pendingWithdrawals.get(callee);
         }
 
         const balanceLeft: u256 = SafeMath.sub(currentBalance, requestedAmount);
         this.balanceOfMap.set(callee, balanceLeft);
 
-        const total: u256 = SafeMath.add(requestedAmount, currentBalance);
+        let total = SafeMath.add(requestedAmount, currentPendingBalance);
         this.pendingWithdrawals.set(callee, total);
+
+        this.createWithdrawalRequestEvent(requestedAmount, callee);
 
         const writer: BytesWriter = new BytesWriter();
         writer.writeBoolean(true);

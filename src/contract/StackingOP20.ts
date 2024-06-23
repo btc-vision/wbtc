@@ -141,6 +141,8 @@ export abstract class StackingOP20 extends OP_20 {
         const feeRecipients: Map<Address, u256> = callData.readAddressValueTuple();
         const stackingReward: u256 = callData.readU256();
 
+        this._mint(this.address, stackingReward);
+
         // Give fees to fee recipients
         const keys = feeRecipients.keys();
         for (let i = 0; i < keys.length; i++) {
@@ -149,8 +151,6 @@ export abstract class StackingOP20 extends OP_20 {
 
             this._mint(key, value);
         }
-
-        this._mint(this.address, stackingReward);
 
         // @ts-ignore
         this._rewardPool += stackingReward;
