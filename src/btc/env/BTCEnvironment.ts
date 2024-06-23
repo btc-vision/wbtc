@@ -17,7 +17,7 @@ export type BlockchainStorage = Map<Address, PointerStorage>;
 //export declare function load(pointer: u256): u256;
 
 //@external('env', 'store')
-//xport declare function store(pointer: u256, value: u256): void;
+//export declare function store(pointer: u256, value: u256): void;
 
 
 @final
@@ -43,7 +43,7 @@ export class BlockchainEnvironment {
 
     public get nextPointer(): u8 {
         this._nextPointer += 1;
-        
+
         return this._nextPointer;
     }
 
