@@ -109,8 +109,7 @@ export class wBTC extends StackingOP20 {
         const balanceLeft: u256 = SafeMath.sub(currentBalance, requestedAmount);
         this.balanceOfMap.set(callee, balanceLeft);
 
-        const total: u256 = SafeMath.add(requestedAmount, currentBalance);
-        this.pendingWithdrawals.set(callee, total);
+        this.pendingWithdrawals.set(callee, requestedAmount);
 
         const writer: BytesWriter = new BytesWriter();
         writer.writeBoolean(true);
