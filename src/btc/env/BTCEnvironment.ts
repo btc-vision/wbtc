@@ -39,6 +39,12 @@ export class BlockchainEnvironment {
     constructor() {
     }
 
+    private _nextPointer: u8 = 0;
+
+    public get nextPointer(): u8 {
+        return this._nextPointer++;
+    }
+
     public _owner: Potential<Address> = null;
 
     public get owner(): Address {

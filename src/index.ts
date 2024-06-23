@@ -29,6 +29,10 @@ export function defineSelectors(): void {
     ABIRegistry.defineGetterSelector('totalStaked', false);
 
     ABIRegistry.defineMethodSelector('addReward', true);
+
+    /** WBTC */
+    ABIRegistry.defineMethodSelector('requestWithdrawal', true);
+    ABIRegistry.defineMethodSelector('withdrawableBalanceOf', false);
 }
 
 export * from './btc/exports';

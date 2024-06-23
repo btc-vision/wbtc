@@ -32,8 +32,10 @@ export class AddressMemoryMap<K extends string, V extends MemorySlotData<u256>> 
     }
 
     @unsafe
-    public delete(_key: K): bool {
-        throw new Error('Method not implemented.');
+    public delete(key: K): bool {
+        this.set(key, this.defaultValue);
+
+        return true;
     }
 
     @unsafe
