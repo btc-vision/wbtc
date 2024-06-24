@@ -48,8 +48,6 @@ export class wBTC extends StackingOP20 {
         const callee = Blockchain.callee();
         const caller = Blockchain.caller();
 
-        this.onlyOwner(callee); // only indexers can burn tokens
-
         if (this._totalSupply.value < value) throw new Revert(`Insufficient total supply.`);
         if (!this.pendingWithdrawals.has(caller)) throw new Revert('Empty');
 
