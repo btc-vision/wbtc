@@ -1,4 +1,5 @@
-import { ABIRegistry } from './btc/universal/ABIRegistry';
+import { ABIRegistry, Blockchain } from '@btc-vision/btc-runtime/runtime';
+import { wBTC } from './contracts/WBTC';
 
 export function defineSelectors(): void {
     ABIRegistry.defineGetterSelector('address', false);
@@ -35,4 +36,7 @@ export function defineSelectors(): void {
     ABIRegistry.defineMethodSelector('withdrawableBalanceOf', false);
 }
 
-export * from './btc/exports';
+Blockchain.contract = new wBTC();
+
+// VERY IMPORTANT
+export * from '@btc-vision/btc-runtime/runtime/exports';

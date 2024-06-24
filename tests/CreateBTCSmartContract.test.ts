@@ -2,7 +2,7 @@ import 'jest';
 
 // @ts-ignore
 import * as wasm from '../config/runDebug.js';
-import { wBTC } from '../src/contract/WBTC';
+import { wBTC } from '../src/contracts/WBTC';
 import {
     ABICoder,
     ABIDataTypes,

@@ -1,19 +1,22 @@
-import { Address } from '../btc/types/Address';
-import { OP_20 } from '../btc/contracts/OP_20';
-import { Calldata } from '../btc/universal/ABIRegistry';
-import { BytesWriter } from '../btc/buffer/BytesWriter';
-import { encodeSelector, Selector } from '../btc/math/abi';
 import { u256 } from 'as-bignum/assembly';
-import { StoredU256 } from '../btc/storage/StoredU256';
-import { Blockchain } from '../btc/env';
-import { AddressMemoryMap } from '../btc/memory/AddressMemoryMap';
-import { MemorySlotData } from '../btc/memory/MemorySlot';
-import { Revert } from '../btc/types/Revert';
-import { SafeMath } from '../btc/types/SafeMath';
-import { StakeEvent } from './events/StakeEvent';
-import { ClaimEvent } from './events/ClaimEvent';
-import { UnstakeEvent } from './events/UnstakeEvent';
-import { Map } from '../btc/generic/Map';
+import {
+    Address,
+    AddressMemoryMap,
+    Blockchain,
+    BytesWriter,
+    Calldata,
+    ClaimEvent,
+    encodeSelector,
+    Map,
+    MemorySlotData,
+    OP_20,
+    Revert,
+    SafeMath,
+    Selector,
+    StakeEvent,
+    StoredU256,
+    UnstakeEvent,
+} from '@btc-vision/btc-runtime/runtime';
 
 export abstract class StackingOP20 extends OP_20 {
     private static readonly MINIMUM_STAKING_AMOUNT: u256 = u256.fromU32(10000); // 0.0001 WBTC

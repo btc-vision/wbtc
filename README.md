@@ -66,7 +66,7 @@ Learn more about staking [here](https://github.com/btc-vision/wbtc/blob/main/STA
 To build the WBTC smart contract, use the following command:
 
 ```bash
-npm run asbuild:release
+npm run build
 ```
 
 This command compiles the AssemblyScript code into WebAssembly, generating the contract binary in the `build/`
