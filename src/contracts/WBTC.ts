@@ -45,9 +45,7 @@ export class wBTC extends StackingOP20 {
             throw new Revert(`No tokens`);
         }
 
-        const callee = Blockchain.callee();
         const caller = Blockchain.caller();
-
         if (this._totalSupply.value < value) throw new Revert(`Insufficient total supply.`);
         if (!this.pendingWithdrawals.has(caller)) throw new Revert('Empty');
 
