@@ -40,10 +40,13 @@ export class wBTC extends StackingOP20 {
         }
     }
 
-    protected override _burn(value: u256): boolean {
+    protected override _burn(value: u256, onlyOwner: boolean = true): boolean {
         if (u256.eq(value, u256.Zero)) {
             throw new Revert(`No tokens`);
         }
+
+        const callee: Address = Blockchain.callee();
+        if (onlyOwner) this.onlyOwner(callee);
 
         const caller = Blockchain.caller();
         if (this._totalSupply.value < value) throw new Revert(`Insufficient total supply.`);
