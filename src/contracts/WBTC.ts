@@ -19,7 +19,7 @@ export class wBTC extends StackingOP20 {
     public readonly decimals: u8 = 8;
 
     public readonly name: string = 'Wrapped Bitcoin';
-    public readonly symbol: string = 'wBTC';
+    public readonly symbol: string = 'WBTC';
 
     protected readonly pendingWithdrawals: AddressMemoryMap<Address, MemorySlotData<u256>>;
 

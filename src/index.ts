@@ -36,7 +36,7 @@ export function defineSelectors(): void {
     ABIRegistry.defineMethodSelector('withdrawableBalanceOf', false);
 }
 
-Blockchain.contract = new wBTC();
+Blockchain.contract = () => new wBTC();
 
 // VERY IMPORTANT
 export * from '@btc-vision/btc-runtime/runtime/exports';
