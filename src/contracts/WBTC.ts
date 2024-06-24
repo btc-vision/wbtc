@@ -1,15 +1,18 @@
 import { u256 } from 'as-bignum/assembly';
 import { StackingOP20 } from './StackingOP20';
-import { AddressMemoryMap } from '../btc/memory/AddressMemoryMap';
-import { Address } from '../btc/types/Address';
-import { MemorySlotData } from '../btc/memory/MemorySlot';
-import { Blockchain } from '../btc/env';
-import { SafeMath } from '../btc/types/SafeMath';
-import { encodeSelector, Selector } from '../btc/math/abi';
-import { Calldata } from '../btc/universal/ABIRegistry';
-import { BytesWriter } from '../btc/buffer/BytesWriter';
-import { Revert } from '../btc/types/Revert';
-import { WithdrawalRequestEvent } from './events/WithdrawalRequestEvent';
+import { WithdrawalRequestEvent } from '../events/WithdrawalRequestEvent';
+import {
+    Address,
+    AddressMemoryMap,
+    Blockchain,
+    BytesWriter,
+    Calldata,
+    encodeSelector,
+    MemorySlotData,
+    Revert,
+    SafeMath,
+    Selector,
+} from '@btc-vision/btc-runtime/runtime';
 
 @final
 export class wBTC extends StackingOP20 {

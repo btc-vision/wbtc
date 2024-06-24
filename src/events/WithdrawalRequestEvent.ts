@@ -1,7 +1,5 @@
-import { NetEvent } from '../../btc/events/NetEvent';
-import { BytesWriter } from '../../btc/buffer/BytesWriter';
+import { Address, BytesWriter, NetEvent } from '@btc-vision/btc-runtime/runtime';
 import { u256 } from 'as-bignum/assembly';
-import { Address } from '../../btc/types/Address';
 
 export class WithdrawalRequestEvent extends NetEvent {
     constructor(amount: u256, address: Address) {
