@@ -26,7 +26,7 @@ export class wBTC extends StackingOP20 {
     constructor() {
         super(u256.fromU64(2100000000000000));
 
-        this.pendingWithdrawals = new AddressMemoryMap<Address, MemorySlotData<u256>>(Blockchain.nextPointer, Blockchain.contractAddress, u256.Zero);
+        this.pendingWithdrawals = new AddressMemoryMap<Address, MemorySlotData<u256>>(Blockchain.nextPointer, u256.Zero);
     }
 
     public override callMethod(method: Selector, calldata: Calldata): BytesWriter {
