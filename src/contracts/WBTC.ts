@@ -16,15 +16,10 @@ import {
 
 @final
 export class wBTC extends StackingOP20 {
-    public readonly decimals: u8 = 8;
-
-    public readonly name: string = 'Wrapped Bitcoin';
-    public readonly symbol: string = 'WBTC';
-
     protected readonly pendingWithdrawals: AddressMemoryMap<Address, MemorySlotData<u256>>;
 
     constructor() {
-        super(u256.fromU64(2100000000000000));
+        super(u256.fromU64(2100000000000000), 8, 'Wrapped Bitcoin', 'WBTC');
 
         this.pendingWithdrawals = new AddressMemoryMap<Address, MemorySlotData<u256>>(Blockchain.nextPointer, u256.Zero);
     }

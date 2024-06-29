@@ -27,8 +27,8 @@ export abstract class StackingOP20 extends OP_20 {
     protected readonly stakingBalances: AddressMemoryMap<Address, MemorySlotData<u256>>;
     protected readonly stakingStartBlock: AddressMemoryMap<Address, MemorySlotData<u256>>;
 
-    protected constructor(maxSupply: u256) {
-        super(maxSupply);
+    protected constructor(maxSupply: u256, decimals: u8, name: string, symbol: string) {
+        super(maxSupply, decimals, name, symbol);
 
         const rewardPointer = Blockchain.nextPointer;
         const rewardPool: u256 = Blockchain.getStorageAt(rewardPointer, u256.Zero, u256.Zero);
