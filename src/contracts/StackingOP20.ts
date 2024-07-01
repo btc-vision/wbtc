@@ -27,19 +27,19 @@ export abstract class StackingOP20 extends OP_20 {
     protected readonly stakingBalances: AddressMemoryMap<Address, MemorySlotData<u256>>;
     protected readonly stakingStartBlock: AddressMemoryMap<Address, MemorySlotData<u256>>;
 
-    protected constructor(maxSupply: u256) {
-        super(maxSupply);
+    protected constructor(maxSupply: u256, decimals: u8, name: string, symbol: string) {
+        super(maxSupply, decimals, name, symbol);
 
         const rewardPointer = Blockchain.nextPointer;
-        const rewardPool: u256 = Blockchain.getStorageAt(Blockchain.contractAddress, rewardPointer, u256.Zero, u256.Zero);
-        this._rewardPool = new StoredU256(Blockchain.contractAddress, rewardPointer, u256.Zero, rewardPool);
+        const rewardPool: u256 = Blockchain.getStorageAt(rewardPointer, u256.Zero, u256.Zero);
+        this._rewardPool = new StoredU256(rewardPointer, u256.Zero, rewardPool);
 
         const stakedPointer = Blockchain.nextPointer;
-        const totalStaked: u256 = Blockchain.getStorageAt(Blockchain.contractAddress, stakedPointer, u256.Zero, u256.Zero);
-        this._totalStaked = new StoredU256(Blockchain.contractAddress, stakedPointer, u256.Zero, totalStaked);
+        const totalStaked: u256 = Blockchain.getStorageAt(stakedPointer, u256.Zero, u256.Zero);
+        this._totalStaked = new StoredU256(stakedPointer, u256.Zero, totalStaked);
 
-        this.stakingBalances = new AddressMemoryMap<Address, MemorySlotData<u256>>(Blockchain.nextPointer, Blockchain.contractAddress, u256.Zero);
-        this.stakingStartBlock = new AddressMemoryMap<Address, MemorySlotData<u256>>(Blockchain.nextPointer, Blockchain.contractAddress, u256.Zero);
+        this.stakingBalances = new AddressMemoryMap<Address, MemorySlotData<u256>>(Blockchain.nextPointer, u256.Zero);
+        this.stakingStartBlock = new AddressMemoryMap<Address, MemorySlotData<u256>>(Blockchain.nextPointer, u256.Zero);
     }
 
     protected _rewardPool: StoredU256;
