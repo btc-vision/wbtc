@@ -1,6 +1,6 @@
 {
     "name": "@btc-vision/wbtc",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Wrapped Bitcoin",
     "main": "index.js",
     "scripts": {

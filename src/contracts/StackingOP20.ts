@@ -177,23 +177,6 @@ export abstract class StackingOP20 extends OP_20 {
         return response;
     }
 
-    public addReward(callData: Calldata): BytesWriter {
-        const amount: u256 = callData.readU256();
-        const callee = Blockchain.callee();
-
-        this.onlyOwner(callee);
-
-        // @ts-ignore
-        this._totalSupply += amount;
-
-        // @ts-ignore
-        this._rewardPool += amount;
-
-        const response = new BytesWriter();
-        response.writeBoolean(true);
-        return response;
-    }
-
     public stakedAmount(calldata: Calldata): BytesWriter {
         const staker: Address = calldata.readAddress();
         const amount: u256 = this.stakingBalances.get(staker);
@@ -234,9 +217,6 @@ export abstract class StackingOP20 extends OP_20 {
             }
             case encodeSelector('claim'): {
                 return this.claim();
-            }
-            case encodeSelector('addReward'): {
-                return this.addReward(calldata);
             }
             case encodeSelector('stakedAmount'): {
                 return this.stakedAmount(calldata);
