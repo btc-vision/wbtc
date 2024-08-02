@@ -306,30 +306,41 @@ export abstract class StackingOP20 extends OP_20 {
     private calculateReward(stakedAmount: u256, stakedDuration: u256): u256 {
         if (this.totalStaked.isZero()) return u256.Zero;
 
-        const m: u256 = u256.fromU32(100_000_000);
-        const stakeProportion: u256 = SafeMath.div(SafeMath.mul(stakedAmount, m), this.totalStaked);
-        let durationMultiplier: u256 = SafeMath.div(
-            SafeMath.add(stakedDuration, u256.One),
+        const precision: u256 = u256.fromU32(100_000_000);
+        const stakeProportion: u256 = SafeMath.div(
+            SafeMath.mul(stakedAmount, precision),
+            this.totalStaked,
+        );
+
+        const maxDurationMultiplier: u256 = SafeMath.mul(
+            StackingOP20.MAXIMUM_DURATION_MULTIPLIER,
+            precision,
+        );
+
+        const durationWithPrecision: u256 = SafeMath.mul(
+            SafeMath.max(stakedDuration, u256.One),
+            precision,
+        );
+
+        const unsafeDurationMultiplier: u256 = SafeMath.div(
+            durationWithPrecision,
             StackingOP20.DURATION_MULTIPLIER,
         );
 
-        if (durationMultiplier > StackingOP20.MAXIMUM_DURATION_MULTIPLIER) {
-            durationMultiplier = StackingOP20.MAXIMUM_DURATION_MULTIPLIER;
-        }
-
-        return SafeMath.min(
-            SafeMath.div(
-                SafeMath.div(
-                    SafeMath.mul(
-                        SafeMath.mul(durationMultiplier, m),
-                        SafeMath.mul(this.rewardPool, stakeProportion),
-                    ),
-                    m,
-                ),
-                m,
-            ),
-            this.rewardPool,
+        const durationMultiplier: u256 = SafeMath.min(
+            unsafeDurationMultiplier,
+            maxDurationMultiplier,
         );
+
+        const reward: u256 = SafeMath.mul(this.rewardPool, stakeProportion);
+        const rewardMultiplier: u256 = SafeMath.div(
+            SafeMath.mul(reward, durationMultiplier),
+            precision,
+        );
+
+        const finalReward: u256 = SafeMath.div(SafeMath.add(reward, rewardMultiplier), precision);
+
+        return SafeMath.min(finalReward, this.rewardPool);
     }
 
     private createStakeEvent(value: u256): void {
