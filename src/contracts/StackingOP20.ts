@@ -73,7 +73,7 @@ export abstract class StackingOP20 extends OP_20 {
         // Claim if possible
         this.claimReward(staker);
 
-        const newBalance: u256 = SafeMath.sub(amount, currentStaked);
+        const newBalance: u256 = SafeMath.add(amount, currentStaked);
 
         // Record staking balance and start block
         this.stakingBalances.set(staker, newBalance);
