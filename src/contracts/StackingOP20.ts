@@ -80,9 +80,9 @@ export abstract class StackingOP20 extends OP_20 {
         this.stakingStartBlock.set(staker, Blockchain.blockNumber);
 
         // @ts-ignore
-        this._totalStaked += newBalance;
+        this._totalStaked += amount;
 
-        this.createStakeEvent(newBalance);
+        this.createStakeEvent(amount);
 
         const response = new BytesWriter();
         response.writeBoolean(true);
@@ -297,7 +297,7 @@ export abstract class StackingOP20 extends OP_20 {
     private calculateReward(stakedAmount: u256, stakedDuration: u256): u256 {
         if (this.totalStaked.isZero()) return u256.Zero;
 
-        const m: u256 = u256.fromU32(10000);
+        const m: u256 = u256.fromU32(100_000_000);
         const stakeProportion: u256 = SafeMath.div(SafeMath.mul(stakedAmount, m), SafeMath.mul(this.totalStaked, m));
         let durationMultiplier: u256 = SafeMath.div(stakedDuration, StackingOP20.DURATION_MULTIPLIER);
         if (durationMultiplier > StackingOP20.MAXIMUM_DURATION_MULTIPLIER) {
