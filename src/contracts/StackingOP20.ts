@@ -298,7 +298,7 @@ export abstract class StackingOP20 extends OP_20 {
         if (this.totalStaked.isZero()) return u256.Zero;
 
         const m: u256 = u256.fromU32(100_000_000);
-        const stakeProportion: u256 = SafeMath.div(SafeMath.mul(stakedAmount, m), SafeMath.mul(this.totalStaked, m));
+        const stakeProportion: u256 = SafeMath.div(SafeMath.mul(stakedAmount, m), this.totalStaked);
         let durationMultiplier: u256 = SafeMath.div(stakedDuration, StackingOP20.DURATION_MULTIPLIER);
         if (durationMultiplier > StackingOP20.MAXIMUM_DURATION_MULTIPLIER) {
             durationMultiplier = StackingOP20.MAXIMUM_DURATION_MULTIPLIER;
