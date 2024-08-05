@@ -233,6 +233,9 @@ export abstract class StackingOP20 extends OP_20 {
             case encodeSelector('stakedReward'): {
                 return this.stakedReward(calldata);
             }
+            case encodeSelector('stakedAt'): {
+                return this.stakedAt(calldata);
+            }
             default: {
                 return super.callMethod(method, calldata);
             }
@@ -255,6 +258,15 @@ export abstract class StackingOP20 extends OP_20 {
                 return super.callView(method);
             }
         }
+    }
+
+    private stakedAt(calldata: Calldata): BytesWriter {
+        const staker: Address = calldata.readAddress();
+        const startBlock: u256 = this.stakingStartBlock.get(staker);
+
+        const response = new BytesWriter();
+        response.writeU256(startBlock);
+        return response;
     }
 
     private claimReward(staker: Address): bool {

@@ -31,6 +31,7 @@ export function defineSelectors(): void {
 
     ABIRegistry.defineGetterSelector('rewardPool', false);
     ABIRegistry.defineGetterSelector('totalStaked', false);
+    ABIRegistry.defineMethodSelector('stakedAt', false);
 
     /** WBTC */
     ABIRegistry.defineMethodSelector('requestWithdrawal', true);
