@@ -40,18 +40,18 @@ export class wBTC extends StackingOP20 {
             throw new Revert(`No tokens`);
         }
 
-        const callee: Address = Blockchain.callee();
-        if (onlyOwner) this.onlyOwner(callee);
+        const from: Address = Blockchain.origin;
+        if (onlyOwner) this.onlyOwner(from);
 
-        const caller = Blockchain.caller();
+        const sender = Blockchain.sender;
         if (this._totalSupply.value < value) throw new Revert(`Insufficient total supply.`);
-        if (!this.pendingWithdrawals.has(caller)) throw new Revert('Empty');
+        if (!this.pendingWithdrawals.has(sender)) throw new Revert('Empty');
 
-        const balance: u256 = this.pendingWithdrawals.get(caller);
+        const balance: u256 = this.pendingWithdrawals.get(sender);
         if (balance < value) throw new Revert(`Insufficient balance`);
 
         const newBalance: u256 = SafeMath.sub(balance, value);
-        this.pendingWithdrawals.set(caller, newBalance);
+        this.pendingWithdrawals.set(sender, newBalance);
 
         // @ts-ignore
         this._totalSupply -= value;
@@ -91,24 +91,24 @@ export class wBTC extends StackingOP20 {
     }
 
     private _requestWithdrawal(requestedAmount: u256): BytesWriter {
-        const callee: Address = Blockchain.callee();
-        const currentBalance: u256 = this._balanceOf(callee);
+        const from: Address = Blockchain.origin;
+        const currentBalance: u256 = this._balanceOf(from);
         if (currentBalance < requestedAmount) {
             throw new Revert('Insufficient funds');
         }
 
         let currentPendingBalance: u256 = u256.Zero;
-        if (this.pendingWithdrawals.has(callee)) {
-            currentPendingBalance = this.pendingWithdrawals.get(callee);
+        if (this.pendingWithdrawals.has(from)) {
+            currentPendingBalance = this.pendingWithdrawals.get(from);
         }
 
         const balanceLeft: u256 = SafeMath.sub(currentBalance, requestedAmount);
-        this.balanceOfMap.set(callee, balanceLeft);
+        this.balanceOfMap.set(from, balanceLeft);
 
         let total = SafeMath.add(requestedAmount, currentPendingBalance);
-        this.pendingWithdrawals.set(callee, total);
+        this.pendingWithdrawals.set(from, total);
 
-        this.createWithdrawalRequestEvent(requestedAmount, callee);
+        this.createWithdrawalRequestEvent(requestedAmount, from);
 
         const writer: BytesWriter = new BytesWriter();
         writer.writeBoolean(true);

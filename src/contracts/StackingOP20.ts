@@ -61,7 +61,7 @@ export abstract class StackingOP20 extends OP_20 {
     }
 
     public stake(callData: Calldata): BytesWriter {
-        const staker: Address = Blockchain.callee();
+        const staker: Address = Blockchain.origin;
         const amount: u256 = callData.readU256();
 
         if (amount < StackingOP20.MINIMUM_STAKING_AMOUNT) {
@@ -96,7 +96,7 @@ export abstract class StackingOP20 extends OP_20 {
     }
 
     public claim(): BytesWriter {
-        const staker: Address = Blockchain.callee();
+        const staker: Address = Blockchain.origin;
 
         const success = this.claimReward(staker);
         if (!success) {
@@ -109,7 +109,7 @@ export abstract class StackingOP20 extends OP_20 {
     }
 
     public unstake(): BytesWriter {
-        const staker: Address = Blockchain.callee();
+        const staker: Address = Blockchain.origin;
 
         const amount: u256 = this.stakingBalances.get(staker);
         if (amount.isZero()) {
