@@ -19,7 +19,7 @@ export class wBTC extends StackingOP20 {
     protected readonly pendingWithdrawals: AddressMemoryMap<Address, MemorySlotData<u256>>;
 
     constructor() {
-        super(u256.fromU64(2100000000000000), 8, 'Wrapped Bitcoin', 'WBTC');
+        super(u256.fromU64(2_100_000_000_000_000), 8, 'Wrapped Bitcoin', 'WBTC');
 
         this.pendingWithdrawals = new AddressMemoryMap<Address, MemorySlotData<u256>>(Blockchain.nextPointer, u256.Zero);
     }
@@ -40,10 +40,9 @@ export class wBTC extends StackingOP20 {
             throw new Revert(`No tokens`);
         }
 
-        const from: Address = Blockchain.origin;
-        if (onlyOwner) this.onlyOwner(from);
+        if (onlyOwner) this.onlyOwner(Blockchain.txOrigin);
 
-        const sender = Blockchain.sender;
+        const sender = Blockchain.msgSender;
         if (this._totalSupply.value < value) throw new Revert(`Insufficient total supply.`);
         if (!this.pendingWithdrawals.has(sender)) throw new Revert('Empty');
 
@@ -91,7 +90,7 @@ export class wBTC extends StackingOP20 {
     }
 
     private _requestWithdrawal(requestedAmount: u256): BytesWriter {
-        const from: Address = Blockchain.origin;
+        const from: Address = Blockchain.msgSender;
         const currentBalance: u256 = this._balanceOf(from);
         if (currentBalance < requestedAmount) {
             throw new Revert('Insufficient funds');
