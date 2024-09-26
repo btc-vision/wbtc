@@ -1,4 +1,3 @@
-import { u256 } from 'as-bignum/assembly';
 import {
     Address,
     AddressMemoryMap,
@@ -17,6 +16,7 @@ import {
     StoredU256,
     UnstakeEvent,
 } from '@btc-vision/btc-runtime/runtime';
+import { u256 } from 'as-bignum/assembly';
 
 export abstract class StackingOP20 extends OP_20 {
     private static readonly MINIMUM_STAKING_AMOUNT: u256 = u256.fromU32(10000); // 0.0001 WBTC
@@ -90,7 +90,7 @@ export abstract class StackingOP20 extends OP_20 {
 
         this.createStakeEvent(amount);
 
-        const response = new BytesWriter();
+        const response = new BytesWriter(1);
         response.writeBoolean(true);
         return response;
     }
@@ -102,8 +102,7 @@ export abstract class StackingOP20 extends OP_20 {
         if (!success) {
             throw new Revert('Claim failed');
         }
-
-        const response = new BytesWriter();
+        const response = new BytesWriter(1);
         response.writeBoolean(true);
         return response;
     }
@@ -142,7 +141,7 @@ export abstract class StackingOP20 extends OP_20 {
 
         this.createUnstakeEvent(amount);
 
-        const response = new BytesWriter();
+        const response = new BytesWriter(1);
         response.writeBoolean(true);
         return response;
     }
@@ -168,7 +167,8 @@ export abstract class StackingOP20 extends OP_20 {
         this._rewardPool += stackingReward;
 
         const resp = this._mint(mintTo, amount);
-        const response = new BytesWriter();
+
+        const response = new BytesWriter(1);
         response.writeBoolean(resp);
 
         return response;
@@ -180,7 +180,7 @@ export abstract class StackingOP20 extends OP_20 {
             throw new Revert('Burn failed');
         }
 
-        const response = new BytesWriter();
+        const response = new BytesWriter(1);
         response.writeBoolean(resp);
 
         return response;
@@ -190,7 +190,7 @@ export abstract class StackingOP20 extends OP_20 {
         const staker: Address = calldata.readAddress();
         const amount: u256 = this.stakingBalances.get(staker);
 
-        const response = new BytesWriter();
+        const response = new BytesWriter(32);
         response.writeU256(amount);
         return response;
     }
@@ -204,7 +204,7 @@ export abstract class StackingOP20 extends OP_20 {
         const duration: u256 = SafeMath.sub(endBlock, startBlock);
         const reward: u256 = this.calculateReward(amount, duration);
 
-        const response = new BytesWriter();
+        const response = new BytesWriter(32);
         response.writeU256(reward);
 
         return response;
@@ -243,7 +243,7 @@ export abstract class StackingOP20 extends OP_20 {
     }
 
     public callView(method: Selector): BytesWriter {
-        const response = new BytesWriter();
+        const response = new BytesWriter(32);
 
         switch (method) {
             case encodeSelector('rewardPool'): {
@@ -264,7 +264,7 @@ export abstract class StackingOP20 extends OP_20 {
         const staker: Address = calldata.readAddress();
         const startBlock: u256 = this.stakingStartBlock.get(staker);
 
-        const response = new BytesWriter();
+        const response = new BytesWriter(32);
         response.writeU256(startBlock);
         return response;
     }

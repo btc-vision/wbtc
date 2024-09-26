@@ -1,6 +1,3 @@
-import { u256 } from 'as-bignum/assembly';
-import { StackingOP20 } from './StackingOP20';
-import { WithdrawalRequestEvent } from '../events/WithdrawalRequestEvent';
 import {
     Address,
     AddressMemoryMap,
@@ -13,6 +10,9 @@ import {
     SafeMath,
     Selector,
 } from '@btc-vision/btc-runtime/runtime';
+import { u256 } from 'as-bignum/assembly';
+import { WithdrawalRequestEvent } from '../events/WithdrawalRequestEvent';
+import { StackingOP20 } from './StackingOP20';
 
 @final
 export class wBTC extends StackingOP20 {
@@ -21,7 +21,10 @@ export class wBTC extends StackingOP20 {
     constructor() {
         super(u256.fromU64(2_100_000_000_000_000), 8, 'Wrapped Bitcoin', 'WBTC');
 
-        this.pendingWithdrawals = new AddressMemoryMap<Address, MemorySlotData<u256>>(Blockchain.nextPointer, u256.Zero);
+        this.pendingWithdrawals = new AddressMemoryMap<Address, MemorySlotData<u256>>(
+            Blockchain.nextPointer,
+            u256.Zero,
+        );
     }
 
     public override callMethod(method: Selector, calldata: Calldata): BytesWriter {
@@ -60,7 +63,10 @@ export class wBTC extends StackingOP20 {
     }
 
     protected createWithdrawalRequestEvent(value: u256, address: Address): void {
-        const withdrawalRequest: WithdrawalRequestEvent = new WithdrawalRequestEvent(value, address);
+        const withdrawalRequest: WithdrawalRequestEvent = new WithdrawalRequestEvent(
+            value,
+            address,
+        );
 
         this.emitEvent(withdrawalRequest);
     }
@@ -75,7 +81,8 @@ export class wBTC extends StackingOP20 {
         const address: Address = calldata.readAddress();
 
         const balance = this._withdrawableBalanceOf(address);
-        const writer: BytesWriter = new BytesWriter();
+
+        const writer: BytesWriter = new BytesWriter(32);
         writer.writeU256(balance);
 
         return writer;
@@ -109,10 +116,9 @@ export class wBTC extends StackingOP20 {
 
         this.createWithdrawalRequestEvent(requestedAmount, from);
 
-        const writer: BytesWriter = new BytesWriter();
+        const writer: BytesWriter = new BytesWriter(1);
         writer.writeBoolean(true);
 
         return writer;
     }
-
 }
