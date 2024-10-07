@@ -61,7 +61,7 @@ export abstract class StackingOP20 extends OP_20 {
     }
 
     public stake(callData: Calldata): BytesWriter {
-        const staker: Address = Blockchain.txOrigin;
+        const staker: Address = Blockchain.tx.origin;
         const amount: u256 = callData.readU256();
 
         if (amount < StackingOP20.MINIMUM_STAKING_AMOUNT) {
@@ -83,7 +83,7 @@ export abstract class StackingOP20 extends OP_20 {
 
         // Record staking balance and start block
         this.stakingBalances.set(staker, newBalance);
-        this.stakingStartBlock.set(staker, Blockchain.blockNumber);
+        this.stakingStartBlock.set(staker, Blockchain.block.number);
 
         // @ts-ignore
         this._totalStaked += amount;
@@ -96,7 +96,7 @@ export abstract class StackingOP20 extends OP_20 {
     }
 
     public claim(): BytesWriter {
-        const staker: Address = Blockchain.txOrigin;
+        const staker: Address = Blockchain.tx.origin;
 
         const success = this.claimReward(staker);
         if (!success) {
@@ -108,7 +108,7 @@ export abstract class StackingOP20 extends OP_20 {
     }
 
     public unstake(): BytesWriter {
-        const staker: Address = Blockchain.txOrigin;
+        const staker: Address = Blockchain.tx.origin;
 
         const amount: u256 = this.stakingBalances.get(staker);
         if (amount.isZero()) {
@@ -116,7 +116,7 @@ export abstract class StackingOP20 extends OP_20 {
         }
 
         const duration: u256 = SafeMath.sub(
-            Blockchain.blockNumber,
+            Blockchain.block.number,
             this.stakingStartBlock.get(staker),
         );
         if (duration < StackingOP20.MINIMUM_STAKING_DURATION) {
@@ -199,7 +199,7 @@ export abstract class StackingOP20 extends OP_20 {
         const staker: Address = calldata.readAddress();
         const amount: u256 = this.stakingBalances.get(staker);
         const startBlock: u256 = this.stakingStartBlock.get(staker);
-        const endBlock: u256 = Blockchain.blockNumber;
+        const endBlock: u256 = Blockchain.block.number;
 
         const duration: u256 = SafeMath.sub(endBlock, startBlock);
         const reward: u256 = this.calculateReward(amount, duration);
@@ -210,8 +210,18 @@ export abstract class StackingOP20 extends OP_20 {
         return response;
     }
 
-    public callMethod(method: Selector, calldata: Calldata): BytesWriter {
+    public execute(method: Selector, calldata: Calldata): BytesWriter {
+        let response = new BytesWriter(32);
+
         switch (method) {
+            case encodeSelector('rewardPool'): {
+                response.writeU256(this.rewardPool);
+                break;
+            }
+            case encodeSelector('totalStaked'): {
+                response.writeU256(this.totalStaked);
+                break;
+            }
             case encodeSelector('mint'): {
                 return this.mint(calldata);
             }
@@ -237,27 +247,11 @@ export abstract class StackingOP20 extends OP_20 {
                 return this.stakedAt(calldata);
             }
             default: {
-                return super.callMethod(method, calldata);
+                return super.execute(method, calldata);
             }
         }
-    }
 
-    public callView(method: Selector): BytesWriter {
-        const response = new BytesWriter(32);
-
-        switch (method) {
-            case encodeSelector('rewardPool'): {
-                response.writeU256(this.rewardPool);
-                return response;
-            }
-            case encodeSelector('totalStaked'): {
-                response.writeU256(this.totalStaked);
-                return response;
-            }
-            default: {
-                return super.callView(method);
-            }
-        }
+        return response;
     }
 
     private stakedAt(calldata: Calldata): BytesWriter {
@@ -274,7 +268,7 @@ export abstract class StackingOP20 extends OP_20 {
         if (!this.stakingBalances.has(staker)) return false;
 
         const startBlock: u256 = this.stakingStartBlock.get(staker);
-        const endBlock: u256 = Blockchain.blockNumber;
+        const endBlock: u256 = Blockchain.block.number;
         const duration: u256 = SafeMath.sub(endBlock, startBlock);
         if (duration < StackingOP20.MINIMUM_STAKING_DURATION) {
             return false;
@@ -308,7 +302,7 @@ export abstract class StackingOP20 extends OP_20 {
         this._rewardPool -= reward;
 
         // Reset staking balance and start block
-        this.stakingStartBlock.set(staker, Blockchain.blockNumber);
+        this.stakingStartBlock.set(staker, Blockchain.block.number);
 
         this.createClaimEvent(reward);
 

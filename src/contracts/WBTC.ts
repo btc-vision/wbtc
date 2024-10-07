@@ -18,7 +18,7 @@ import { StackingOP20 } from './StackingOP20';
 export class wBTC extends StackingOP20 {
     protected readonly pendingWithdrawals: AddressMemoryMap<Address, MemorySlotData<u256>>;
 
-    constructor() {
+    public constructor() {
         super(u256.fromU64(2_100_000_000_000_000), 8, 'Wrapped Bitcoin', 'WBTC');
 
         this.pendingWithdrawals = new AddressMemoryMap<Address, MemorySlotData<u256>>(
@@ -27,14 +27,14 @@ export class wBTC extends StackingOP20 {
         );
     }
 
-    public override callMethod(method: Selector, calldata: Calldata): BytesWriter {
+    public override execute(method: Selector, calldata: Calldata): BytesWriter {
         switch (method) {
             case encodeSelector('requestWithdrawal'):
                 return this.requestWithdrawal(calldata);
             case encodeSelector('withdrawableBalanceOf'):
                 return this.withdrawableBalanceOf(calldata);
             default:
-                return super.callMethod(method, calldata);
+                return super.execute(method, calldata);
         }
     }
 
@@ -43,9 +43,10 @@ export class wBTC extends StackingOP20 {
             throw new Revert(`No tokens`);
         }
 
-        if (onlyOwner) this.onlyOwner(Blockchain.txOrigin);
+        const sender = Blockchain.tx.sender;
 
-        const sender = Blockchain.msgSender;
+        if (onlyOwner) this.onlyOwner(sender);
+
         if (this._totalSupply.value < value) throw new Revert(`Insufficient total supply.`);
         if (!this.pendingWithdrawals.has(sender)) throw new Revert('Empty');
 
@@ -97,7 +98,7 @@ export class wBTC extends StackingOP20 {
     }
 
     private _requestWithdrawal(requestedAmount: u256): BytesWriter {
-        const from: Address = Blockchain.msgSender;
+        const from: Address = Blockchain.tx.sender;
         const currentBalance: u256 = this._balanceOf(from);
         if (currentBalance < requestedAmount) {
             throw new Revert('Insufficient funds');
